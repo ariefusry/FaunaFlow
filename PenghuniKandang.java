@@ -1,3 +1,3 @@
-public class PenghuniKandang {
+public class PenghuniKandang extends Kandang {
     
 }

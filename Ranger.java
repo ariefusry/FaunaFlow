@@ -1,3 +1,3 @@
-public class Ranger extends Employee{
+public class Ranger extends Employee implements JobRanger{
     
 }
