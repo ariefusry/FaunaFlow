@@ -52,7 +52,7 @@ public class Hewan {
 
             while (rs.next()) {
                 Object[] hewan = new Object[5];
-                hewan[0] = rs.getInt("id");
+                hewan[0] = rs.getInt("idHewan");
                 hewan[1] = rs.getString("nama");
                 hewan[2] = rs.getInt("umur");
                 hewan[3] = rs.getInt("jumlah");
@@ -64,5 +64,18 @@ public class Hewan {
             e.printStackTrace();
         }
         return hewanList.toArray(new Object[0][0]);
+    }
+
+    public void deleteHewan(int idHewan) {
+        try (Connection conn = FaunaFlowGG.getConnection()) {
+            String sql = "DELETE FROM hewan WHERE idHewan = ?";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setInt(1, idHewan);
+            stmt.executeUpdate();
+            System.out.println("Hewan deleted successfully!");
+        } catch (SQLException e) {
+            System.out.println("Error deleting hewan from database: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 }

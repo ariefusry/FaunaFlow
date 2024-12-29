@@ -82,6 +82,40 @@ public class SwingUI {
         accountMenu.add(logoutMenuItem);
         menuBar.add(accountMenu);
 
+        JMenu zooMenu = new JMenu("Zoo");
+        JMenu kandangMenu = new JMenu("Kandang");
+        JMenu hewanMenu = new JMenu("Hewan");
+
+        JMenuItem viewKandangMenuItem = new JMenuItem("View Kandang");
+        JMenuItem viewHewanMenuItem = new JMenuItem("View Hewan");
+        JMenuItem viewKandangContentsMenuItem = new JMenuItem("View Penghuni Kandang");
+
+        viewKandangMenuItem.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                showKandangList();
+            }
+        });
+
+        viewHewanMenuItem.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                showHewanList();
+            }
+        });
+
+        viewKandangContentsMenuItem.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                showKandangContents();
+            }
+        });
+
+        kandangMenu.add(viewKandangMenuItem);
+        kandangMenu.add(viewKandangContentsMenuItem);
+        hewanMenu.add(viewHewanMenuItem);
+
+        zooMenu.add(kandangMenu);
+        zooMenu.add(hewanMenu);
+        menuBar.add(zooMenu);
+
         if (ems.isAdmin()) { // Check admin role
             JMenu employeeMenu = new JMenu("Employee");
             JMenuItem employeeListMenuItem = new JMenuItem("Employee List");
@@ -111,12 +145,11 @@ public class SwingUI {
             employeeMenu.add(removeEmployeeMenuItem);
             menuBar.add(employeeMenu);
 
-            JMenu zooMenu = new JMenu("Zoo");
             JMenuItem addKandangMenuItem = new JMenuItem("Add Kandang");
             JMenuItem setHewanToKandangMenuItem = new JMenuItem("Set Hewan to Kandang");
             JMenuItem addHewanMenuItem = new JMenuItem("Add Hewan");
-            JMenuItem viewKandangMenuItem = new JMenuItem("View Kandang");
-            JMenuItem viewHewanMenuItem = new JMenuItem("View Hewan");
+            JMenuItem deleteKandangMenuItem = new JMenuItem("Delete Kandang");
+            JMenuItem deleteHewanMenuItem = new JMenuItem("Delete Hewan");
 
             addKandangMenuItem.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
@@ -136,24 +169,23 @@ public class SwingUI {
                 }
             });
 
-            viewKandangMenuItem.addActionListener(new ActionListener() {
+            deleteKandangMenuItem.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    showKandangList();
+                    showDeleteKandangPage();
                 }
             });
 
-            viewHewanMenuItem.addActionListener(new ActionListener() {
+            deleteHewanMenuItem.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    showHewanList();
+                    showDeleteHewanPage();
                 }
             });
 
-            zooMenu.add(addKandangMenuItem);
-            zooMenu.add(setHewanToKandangMenuItem);
-            zooMenu.add(addHewanMenuItem);
-            zooMenu.add(viewKandangMenuItem);
-            zooMenu.add(viewHewanMenuItem);
-            menuBar.add(zooMenu);
+            kandangMenu.add(addKandangMenuItem);
+            kandangMenu.add(setHewanToKandangMenuItem);
+            kandangMenu.add(deleteKandangMenuItem);
+            hewanMenu.add(addHewanMenuItem);
+            hewanMenu.add(deleteHewanMenuItem);
         }
 
         frame.setJMenuBar(menuBar);
@@ -198,6 +230,14 @@ public class SwingUI {
 
         JScrollPane scrollPane = new JScrollPane(table);
         panel.add(scrollPane, BorderLayout.CENTER);
+
+        JButton backButton = new JButton("Back");
+        backButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                showLoggedInHomePage();
+            }
+        });
+        panel.add(backButton, BorderLayout.SOUTH);
 
         panel.revalidate();
         panel.repaint();
@@ -387,7 +427,7 @@ public class SwingUI {
 
         gbc.gridx = 0;
         gbc.gridy = 0;
-        JLabel ukuranLabel = new JLabel("Ukuran");
+        JLabel ukuranLabel = new JLabel("Ukuran (m2)");
         panel.add(ukuranLabel, gbc);
 
         gbc.gridx = 1;
@@ -577,8 +617,6 @@ public class SwingUI {
         String[] columnNames = {"ID", "Ukuran", "Tipe", "Spesialitas"};
         Object[][] data = kandang.getKandangData(); // Use Kandang instance to get kandang data
 
-        System.out.println("Data length: " + data.length); // Debug statement
-
         if (data.length == 0) {
             JLabel noDataLabel = new JLabel("No Kandang data available.");
             noDataLabel.setHorizontalAlignment(SwingConstants.CENTER);
@@ -592,7 +630,7 @@ public class SwingUI {
             };
 
             JTable table = new JTable(model);
-            table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+            table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
             table.setFillsViewportHeight(true);
             table.setRowHeight(30);
             table.setFont(new Font("Arial", Font.PLAIN, 14));
@@ -604,7 +642,6 @@ public class SwingUI {
             centerRenderer.setHorizontalAlignment(JLabel.CENTER);
             for (int i = 0; i < table.getColumnCount(); i++) {
                 table.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
-                table.getColumnModel().getColumn(i).setPreferredWidth(150); // Set preferred width for each column
             }
 
             JScrollPane scrollPane = new JScrollPane(table);
@@ -612,6 +649,14 @@ public class SwingUI {
             scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
             panel.add(scrollPane, BorderLayout.CENTER);
         }
+
+        JButton backButton = new JButton("Back");
+        backButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                showLoggedInHomePage();
+            }
+        });
+        panel.add(backButton, BorderLayout.SOUTH);
 
         panel.revalidate();
         panel.repaint();
@@ -637,7 +682,7 @@ public class SwingUI {
             };
 
             JTable table = new JTable(model);
-            table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+            table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
             table.setFillsViewportHeight(true);
             table.setRowHeight(30);
             table.setFont(new Font("Arial", Font.PLAIN, 14));
@@ -649,7 +694,6 @@ public class SwingUI {
             centerRenderer.setHorizontalAlignment(JLabel.CENTER);
             for (int i = 0; i < table.getColumnCount(); i++) {
                 table.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
-                table.getColumnModel().getColumn(i).setPreferredWidth(150); // Set preferred width for each column
             }
 
             JScrollPane scrollPane = new JScrollPane(table);
@@ -657,6 +701,154 @@ public class SwingUI {
             scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
             panel.add(scrollPane, BorderLayout.CENTER);
         }
+
+        JButton backButton = new JButton("Back");
+        backButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                showLoggedInHomePage();
+            }
+        });
+        panel.add(backButton, BorderLayout.SOUTH);
+
+        panel.revalidate();
+        panel.repaint();
+    }
+
+    private void showKandangContents() {
+        panel.removeAll();
+        panel.setLayout(new BorderLayout());
+
+        String[] columnNames = {"Tipe", "Ukuran", "Nama Hewan", "Jumlah"};
+        Object[][] data = kandang.getKandangContents(); // Use Kandang instance to get kandang contents data
+
+        if (data.length == 0) {
+            JLabel noDataLabel = new JLabel("No Kandang contents available.");
+            noDataLabel.setHorizontalAlignment(SwingConstants.CENTER);
+            panel.add(noDataLabel, BorderLayout.CENTER);
+        } else {
+            DefaultTableModel model = new DefaultTableModel(data, columnNames) {
+                @Override
+                public boolean isCellEditable(int row, int column) {
+                    return false; // Make table cells non-editable
+                }
+            };
+
+            JTable table = new JTable(model);
+            table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+            table.setFillsViewportHeight(true);
+            table.setRowHeight(30);
+            table.setFont(new Font("Arial", Font.PLAIN, 14));
+            table.getTableHeader().setFont(new Font("Arial", Font.BOLD, 16));
+            table.getTableHeader().setBackground(Color.LIGHT_GRAY);
+            table.setGridColor(Color.GRAY);
+
+            DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+            centerRenderer.setHorizontalAlignment(JLabel.CENTER);
+            for (int i = 0; i < table.getColumnCount(); i++) {
+                table.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
+            }
+
+            JScrollPane scrollPane = new JScrollPane(table);
+            scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+            scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+            panel.add(scrollPane, BorderLayout.CENTER);
+        }
+
+        JButton backButton = new JButton("Back");
+        backButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                showLoggedInHomePage();
+            }
+        });
+        panel.add(backButton, BorderLayout.SOUTH);
+
+        panel.revalidate();
+        panel.repaint();
+    }
+
+    private void showDeleteKandangPage() {
+        panel.removeAll();
+        panel.setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        JLabel idLabel = new JLabel("Kandang ID");
+        panel.add(idLabel, gbc);
+
+        gbc.gridx = 1;
+        JTextField idText = new JTextField(20);
+        panel.add(idText, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        JButton backButton = new JButton("Back");
+        panel.add(backButton, gbc);
+
+        gbc.gridx = 1;
+        JButton deleteButton = new JButton("Delete");
+        panel.add(deleteButton, gbc);
+
+        deleteButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                int id = Integer.parseInt(idText.getText());
+                kandang.deleteKandang(id); // Use Kandang instance to delete kandang
+                JOptionPane.showMessageDialog(panel, "Kandang deleted successfully!");
+                showLoggedInHomePage();
+            }
+        });
+
+        backButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                showLoggedInHomePage();
+            }
+        });
+
+        panel.revalidate();
+        panel.repaint();
+    }
+
+    private void showDeleteHewanPage() {
+        panel.removeAll();
+        panel.setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        JLabel idLabel = new JLabel("Hewan ID");
+        panel.add(idLabel, gbc);
+
+        gbc.gridx = 1;
+        JTextField idText = new JTextField(20);
+        panel.add(idText, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        JButton backButton = new JButton("Back");
+        panel.add(backButton, gbc);
+
+        gbc.gridx = 1;
+        JButton deleteButton = new JButton("Delete");
+        panel.add(deleteButton, gbc);
+
+        deleteButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                int id = Integer.parseInt(idText.getText());
+                hewan.deleteHewan(id); // Use Hewan instance to delete hewan
+                JOptionPane.showMessageDialog(panel, "Hewan deleted successfully!");
+                showLoggedInHomePage();
+            }
+        });
+
+        backButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                showLoggedInHomePage();
+            }
+        });
 
         panel.revalidate();
         panel.repaint();

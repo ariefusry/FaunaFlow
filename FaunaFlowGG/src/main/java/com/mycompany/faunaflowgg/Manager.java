@@ -100,11 +100,20 @@ public class Manager {
 
     public void setHewanToKandang(int idKandang, int idHewan) {
         try (Connection conn = FaunaFlowGG.getConnection()) {
-            String sql = "UPDATE kandang SET idHewan = ? WHERE id = ?";
-            PreparedStatement stmt = conn.prepareStatement(sql);
-            stmt.setInt(1, idHewan);
-            stmt.setInt(2, idKandang);
-            stmt.executeUpdate();
+            // Update kandang table
+            String sqlKandang = "UPDATE kandang SET idHewan = ? WHERE id = ?";
+            PreparedStatement stmtKandang = conn.prepareStatement(sqlKandang);
+            stmtKandang.setInt(1, idHewan);
+            stmtKandang.setInt(2, idKandang);
+            stmtKandang.executeUpdate();
+
+            // Update hewan table
+            String sqlHewan = "UPDATE hewan SET idKandang = ? WHERE idHewan = ?";
+            PreparedStatement stmtHewan = conn.prepareStatement(sqlHewan);
+            stmtHewan.setInt(1, idKandang);
+            stmtHewan.setInt(2, idHewan);
+            stmtHewan.executeUpdate();
+
             System.out.println("Hewan set to kandang successfully!");
         } catch (SQLException e) {
             System.out.println("Error setting hewan to kandang: " + e.getMessage());
