@@ -21,6 +21,7 @@ public class SwingUI {
     private Manager manager; // Add Manager instance
     private Kandang kandang; // Add Kandang instance
     private Hewan hewan; // Add Hewan instance
+    private Ranger ranger; // Add Ranger instance
     private JFrame frame;
     private JPanel panel;
 
@@ -29,6 +30,7 @@ public class SwingUI {
         this.manager = new Manager(); // Initialize Manager
         this.kandang = new Kandang(0, "", ""); // Initialize Kandang
         this.hewan = new Hewan("", 0, 0, 0.0); // Initialize Hewan with parameters
+        this.ranger = new Ranger(); // Initialize Ranger
         frame = new JFrame("FaunaFlow");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(600, 400);
@@ -54,14 +56,67 @@ public class SwingUI {
         menuBar.add(accountMenu);
         frame.setJMenuBar(menuBar);
 
-        // Display a welcome message
-        JLabel welcomeLabel = new JLabel("Welcome to FaunaFlow");
-        welcomeLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        panel.add(welcomeLabel, BorderLayout.CENTER);
+        // Display JobdeskKaryawan table
+        showJobdeskKaryawanTable();
 
         panel.revalidate();
         panel.repaint();
         frame.setVisible(true);
+    }
+
+    private void showJobdeskKaryawanTable() {
+        panel.removeAll();
+        panel.setLayout(new BorderLayout());
+
+        JLabel titleLabel = new JLabel("Weekly Activity Ranger");
+        titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 18));
+        panel.add(titleLabel, BorderLayout.NORTH);
+
+        String[] columnNames = {"Nama Karyawan", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"};
+        Object[][] data = manager.getJobdeskKaryawanData(); // Use Manager to get JobdeskKaryawan data
+
+        // Remove the ID column from the data
+        Object[][] tableData = new Object[data.length][7];
+        for (int i = 0; i < data.length; i++) {
+            System.arraycopy(data[i], 1, tableData[i], 0, 7);
+        }
+
+        if (tableData.length == 0) {
+            JLabel noDataLabel = new JLabel("No JobdeskKaryawan data available.");
+            noDataLabel.setHorizontalAlignment(SwingConstants.CENTER);
+            panel.add(noDataLabel, BorderLayout.CENTER);
+        } else {
+            DefaultTableModel model = new DefaultTableModel(tableData, columnNames) {
+                @Override
+                public boolean isCellEditable(int row, int column) {
+                    return false; // Make table cells non-editable
+                }
+            };
+
+            JTable table = new JTable(model);
+            table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+            table.setFillsViewportHeight(true);
+            table.setRowHeight(30);
+            table.setFont(new Font("Arial", Font.PLAIN, 14));
+            table.getTableHeader().setFont(new Font("Arial", Font.BOLD, 16));
+            table.getTableHeader().setBackground(Color.LIGHT_GRAY);
+            table.setGridColor(Color.GRAY);
+
+            DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+            centerRenderer.setHorizontalAlignment(JLabel.CENTER);
+            for (int i = 0; i < table.getColumnCount(); i++) {
+                table.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
+            }
+
+            JScrollPane scrollPane = new JScrollPane(table);
+            scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+            scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+            panel.add(scrollPane, BorderLayout.CENTER);
+        }
+
+        panel.revalidate();
+        panel.repaint();
     }
 
     public void showLoggedInHomePage() {
@@ -121,6 +176,9 @@ public class SwingUI {
             JMenuItem employeeListMenuItem = new JMenuItem("Employee List");
             JMenuItem addEmployeeMenuItem = new JMenuItem("Add Employee");
             JMenuItem removeEmployeeMenuItem = new JMenuItem("Remove Employee");
+            JMenuItem assignJobdeskMenuItem = new JMenuItem("Assign Random Jobdesks"); // New menu item
+            JMenuItem deleteAllJobdeskMenuItem = new JMenuItem("Delete All Jobdesks"); // New menu item
+            JMenuItem viewReportsMenuItem = new JMenuItem("View Reports"); // New menu item
 
             employeeListMenuItem.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
@@ -140,9 +198,33 @@ public class SwingUI {
                 }
             });
 
+            assignJobdeskMenuItem.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    manager.assignRandomJobdesks(); // Use Manager to assign random jobdesks
+                    JOptionPane.showMessageDialog(panel, "Jobdesks assigned successfully!");
+                }
+            });
+
+            deleteAllJobdeskMenuItem.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    manager.deleteAllJobdeskKaryawan(); // Use Manager to delete all jobdesks
+                    JOptionPane.showMessageDialog(panel, "All Jobdesks deleted successfully!");
+                    showJobdeskKaryawanTable();
+                }
+            });
+
+            viewReportsMenuItem.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    showReportsPage(); // Show reports page
+                }
+            });
+
             employeeMenu.add(employeeListMenuItem);
             employeeMenu.add(addEmployeeMenuItem);
             employeeMenu.add(removeEmployeeMenuItem);
+            employeeMenu.add(assignJobdeskMenuItem); // Add new menu item
+            employeeMenu.add(deleteAllJobdeskMenuItem); // Add new menu item
+            employeeMenu.add(viewReportsMenuItem); // Add new menu item
             menuBar.add(employeeMenu);
 
             JMenuItem addKandangMenuItem = new JMenuItem("Add Kandang");
@@ -186,14 +268,32 @@ public class SwingUI {
             kandangMenu.add(deleteKandangMenuItem);
             hewanMenu.add(addHewanMenuItem);
             hewanMenu.add(deleteHewanMenuItem);
+        } else if (ems.isUser()) { // Check user role
+            JMenu reportMenu = new JMenu("Report");
+            JMenuItem submitReportMenuItem = new JMenuItem("Submit Report");
+            JMenuItem viewReportsMenuItem = new JMenuItem("View Reports"); // New menu item
+
+            submitReportMenuItem.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    showSubmitReportPage();
+                }
+            });
+
+            viewReportsMenuItem.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    showReportsPage(); // Show reports page
+                }
+            });
+
+            reportMenu.add(submitReportMenuItem);
+            reportMenu.add(viewReportsMenuItem); // Add new menu item
+            menuBar.add(reportMenu);
         }
 
         frame.setJMenuBar(menuBar);
 
-        // Display a welcome message
-        JLabel welcomeLabel = new JLabel("Welcome, " + (ems.isAdmin() ? "Manager" : "Ranger"));
-        welcomeLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        panel.add(welcomeLabel, BorderLayout.CENTER);
+        // Display JobdeskKaryawan table
+        showJobdeskKaryawanTable();
 
         panel.revalidate();
         panel.repaint();
@@ -849,6 +949,124 @@ public class SwingUI {
                 showLoggedInHomePage();
             }
         });
+
+        panel.revalidate();
+        panel.repaint();
+    }
+
+    private void showSubmitReportPage() {
+        panel.removeAll();
+        panel.setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        JLabel nameLabel = new JLabel("Name");
+        panel.add(nameLabel, gbc);
+
+        gbc.gridx = 1;
+        JTextField nameText = new JTextField(20);
+        panel.add(nameText, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        JLabel reportLabel = new JLabel("Report");
+        panel.add(reportLabel, gbc);
+
+        gbc.gridx = 1;
+        JTextArea reportText = new JTextArea(5, 20);
+        JScrollPane scrollPane = new JScrollPane(reportText);
+        panel.add(scrollPane, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        JButton backButton = new JButton("Back");
+        panel.add(backButton, gbc);
+
+        gbc.gridx = 1;
+        JButton submitButton = new JButton("Submit");
+        panel.add(submitButton, gbc);
+
+        submitButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                String nama = nameText.getText();
+                String laporan = reportText.getText();
+                ranger.submitReport(nama, laporan); // Use Ranger to submit report
+                JOptionPane.showMessageDialog(panel, "Report submitted successfully!");
+                showLoggedInHomePage();
+            }
+        });
+
+        backButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                showLoggedInHomePage();
+            }
+        });
+
+        panel.revalidate();
+        panel.repaint();
+    }
+
+    private void showReportsPage() {
+        panel.removeAll();
+        panel.setLayout(new BorderLayout());
+
+        JLabel titleLabel = new JLabel("Reports");
+        titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 18));
+        panel.add(titleLabel, BorderLayout.NORTH);
+
+        String[] columnNames = {"Nama", "Laporan", "Tanggal"};
+        Object[][] data = ems.isAdmin() ? manager.getAllReports() : ranger.getAllReports(); // Use Manager or Ranger to get reports
+
+        // Remove the ID column from the data
+        Object[][] tableData = new Object[data.length][3];
+        for (int i = 0; i < data.length; i++) {
+            System.arraycopy(data[i], 1, tableData[i], 0, 3);
+        }
+
+        if (tableData.length == 0) {
+            JLabel noDataLabel = new JLabel("No reports available.");
+            noDataLabel.setHorizontalAlignment(SwingConstants.CENTER);
+            panel.add(noDataLabel, BorderLayout.CENTER);
+        } else {
+            DefaultTableModel model = new DefaultTableModel(tableData, columnNames) {
+                @Override
+                public boolean isCellEditable(int row, int column) {
+                    return false; // Make table cells non-editable
+                }
+            };
+
+            JTable table = new JTable(model);
+            table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+            table.setFillsViewportHeight(true);
+            table.setRowHeight(30);
+            table.setFont(new Font("Arial", Font.PLAIN, 14));
+            table.getTableHeader().setFont(new Font("Arial", Font.BOLD, 16));
+            table.getTableHeader().setBackground(Color.LIGHT_GRAY);
+            table.setGridColor(Color.GRAY);
+
+            DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+            centerRenderer.setHorizontalAlignment(JLabel.CENTER);
+            for (int i = 0; i < table.getColumnCount(); i++) {
+                table.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
+            }
+
+            JScrollPane scrollPane = new JScrollPane(table);
+            scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+            scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+            panel.add(scrollPane, BorderLayout.CENTER);
+        }
+
+        JButton backButton = new JButton("Back");
+        backButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                showLoggedInHomePage();
+            }
+        });
+        panel.add(backButton, BorderLayout.SOUTH);
 
         panel.revalidate();
         panel.repaint();
