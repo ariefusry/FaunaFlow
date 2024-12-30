@@ -9,14 +9,14 @@ import java.util.ArrayList;
  * @author LENOVO
  */
 public class Hewan {
-    private ArrayList<penghunikandang> listHewan = new ArrayList<>();
+    private ArrayList<PenghuniKandang> listHewan = new ArrayList<>();
 
-    public void addHewan(penghunikandang penghuni) {
+    public void addHewan(PenghuniKandang penghuni) {
         listHewan.add(penghuni);
     }
 
     public void showAllHewan() {
-        for (penghunikandang penghuni : listHewan) {
+        for (PenghuniKandang penghuni : listHewan) {
             System.out.println("Nama: " + penghuni.getNama() + ", Umur: " + penghuni.getUmur());
         }
     }
