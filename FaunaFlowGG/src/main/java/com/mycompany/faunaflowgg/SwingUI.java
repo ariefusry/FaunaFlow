@@ -581,8 +581,9 @@ public class SwingUI {
         panel.add(tipeLabel, gbc);
 
         gbc.gridx = 1;
-        JTextField tipeText = new JTextField(40); // Increase size
-        panel.add(tipeText, gbc);
+        JTextArea tipeText = new JTextArea(5, 20); // Change to JTextArea
+        JScrollPane tipeScrollPane = new JScrollPane(tipeText);
+        panel.add(tipeScrollPane, gbc);
 
         gbc.gridx = 0;
         gbc.gridy = 2;
@@ -590,8 +591,9 @@ public class SwingUI {
         panel.add(spesialitasLabel, gbc);
 
         gbc.gridx = 1;
-        JTextField spesialitasText = new JTextField(40); // Increase size
-        panel.add(spesialitasText, gbc);
+        JTextArea spesialitasText = new JTextArea(5, 20); // Change to JTextArea
+        JScrollPane spesialitasScrollPane = new JScrollPane(spesialitasText);
+        panel.add(spesialitasScrollPane, gbc);
 
         gbc.gridx = 0;
         gbc.gridy = 3;
