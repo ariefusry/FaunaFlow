@@ -78,11 +78,53 @@ public class Gudang {
         }
     }
 
+    public boolean updateStokByName(String kategoriStok, String namaStok, int jumlah) {
+        try (Connection conn = FaunaFlowGG.getConnection()) {
+            String sql = "UPDATE Stok SET jumlahStok = ? WHERE kategoriStok = ? AND namaStok = ?";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setInt(1, jumlah);
+            stmt.setString(2, kategoriStok);
+            stmt.setString(3, namaStok);
+            int rowsUpdated = stmt.executeUpdate();
+            if (rowsUpdated > 0) {
+                loadStokFromDatabase(); // Refresh the list from the database
+                System.out.println("Stok berhasil diperbarui!");
+                return true;
+            } else {
+                System.out.println("Stok tidak ditemukan!");
+                return false;
+            }
+        } catch (SQLException e) {
+            System.out.println("Error updating stok in database: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     public void deleteStok(int idStok) {
         try (Connection conn = FaunaFlowGG.getConnection()) {
             String sql = "DELETE FROM Stok WHERE idStok = ?";
             PreparedStatement stmt = conn.prepareStatement(sql);
             stmt.setInt(1, idStok);
+            int rowsDeleted = stmt.executeUpdate();
+            if (rowsDeleted > 0) {
+                loadStokFromDatabase(); // Refresh the list from the database
+                System.out.println("Stok berhasil dihapus!");
+            } else {
+                System.out.println("Stok tidak ditemukan!");
+            }
+        } catch (SQLException e) {
+            System.out.println("Error deleting stok from database: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    public void deleteStokByName(String kategoriStok, String namaStok) {
+        try (Connection conn = FaunaFlowGG.getConnection()) {
+            String sql = "DELETE FROM Stok WHERE kategoriStok = ? AND namaStok = ?";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setString(1, kategoriStok);
+            stmt.setString(2, namaStok);
             int rowsDeleted = stmt.executeUpdate();
             if (rowsDeleted > 0) {
                 loadStokFromDatabase(); // Refresh the list from the database

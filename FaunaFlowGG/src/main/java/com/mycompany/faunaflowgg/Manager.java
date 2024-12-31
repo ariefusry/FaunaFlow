@@ -219,26 +219,32 @@ public class Manager {
     }
 
     public void tambahStokMakanan(String namaStok, int jumlah) {
-        gudang.tambahStokMakanan(namaStok, jumlah);
+        gudang.loadStokFromDatabase(); // Refresh the list from the database
+        gudang.tambahStok("Makanan", namaStok, jumlah, "kg", 1); // Adjust parameters as needed
     }
 
     public boolean updateStokMakanan(String namaStok, int jumlah) {
-        return gudang.updateStokMakanan(namaStok, jumlah);
+        gudang.loadStokFromDatabase(); // Refresh the list from the database
+        return gudang.updateStokByName("Makanan", namaStok, jumlah); // Ensure Gudang has this method
     }
 
     public void deleteStokMakanan(String namaStok) {
-        gudang.deleteStokMakanan(namaStok);
+        gudang.loadStokFromDatabase(); // Refresh the list from the database
+        gudang.deleteStokByName("Makanan", namaStok); // Ensure Gudang has this method
     }
 
     public void cekStok(ArrayList<Object[]> stokDataList) {
+        gudang.loadStokFromDatabase(); // Refresh the list from the database
         gudang.cekStok(stokDataList);
     }
 
     public void tambahStok(String kategoriStok, String namaStok, int jumlah, String satuan, int idGudang) {
+        gudang.loadStokFromDatabase(); // Refresh the list from the database
         gudang.tambahStok(kategoriStok, namaStok, jumlah, satuan, idGudang);
     }
 
     public boolean updateStok(int idStok, int jumlah) {
+        gudang.loadStokFromDatabase(); // Refresh the list from the database
         boolean updated = gudang.updateStok(idStok, jumlah);
         if (updated) {
             gudang.loadStokFromDatabase(); // Refresh the list from the database
@@ -247,6 +253,7 @@ public class Manager {
     }
 
     public void deleteStok(int idStok) {
+        gudang.loadStokFromDatabase(); // Refresh the list from the database
         gudang.deleteStok(idStok);
         gudang.loadStokFromDatabase(); // Refresh the list from the database
     }
