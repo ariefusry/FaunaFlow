@@ -607,8 +607,14 @@ public class SwingUI {
         addButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 String ukuran = ukuranText.getText();
-                String tipe = tipeText.getText();
-                String spesialitas = spesialitasText.getText();
+                String tipe = tipeText.getText().trim();
+                String spesialitas = spesialitasText.getText().trim();
+
+                if (tipe.isEmpty() || spesialitas.isEmpty()) {
+                    JOptionPane.showMessageDialog(panel, "Belum Terisi", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
                 kandang.addKandang(ukuran, tipe, spesialitas); // Use Kandang instance to add kandang
                 JOptionPane.showMessageDialog(panel, "Kandang added successfully!");
                 showLoggedInHomePage();
