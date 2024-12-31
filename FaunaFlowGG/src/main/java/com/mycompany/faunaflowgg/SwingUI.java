@@ -290,6 +290,46 @@ public class SwingUI {
             menuBar.add(reportMenu);
         }
 
+        if (ems.isAdmin() || ems.isUser()) { // Check admin or user role
+            JMenu gudangMenu = new JMenu("Gudang");
+            JMenuItem tambahStokMenuItem = new JMenuItem("Tambah Stok");
+            JMenuItem updateStokMenuItem = new JMenuItem("Update Stok");
+            JMenuItem deleteStokMenuItem = new JMenuItem("Delete Stok");
+            JMenuItem cekStokMenuItem = new JMenuItem("Cek Stok");
+
+            tambahStokMenuItem.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    showTambahStokPage();
+                }
+            });
+
+            updateStokMenuItem.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    showUpdateStokPage();
+                }
+            });
+
+            deleteStokMenuItem.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    showDeleteStokPage();
+                }
+            });
+
+            cekStokMenuItem.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    showCekStokPage();
+                }
+            });
+
+            if (ems.isAdmin()) {
+                gudangMenu.add(tambahStokMenuItem);
+                gudangMenu.add(deleteStokMenuItem);
+            }
+            gudangMenu.add(updateStokMenuItem);
+            gudangMenu.add(cekStokMenuItem);
+            menuBar.add(gudangMenu);
+        }
+
         frame.setJMenuBar(menuBar);
 
         // Display JobdeskKaryawan table
@@ -1059,6 +1099,262 @@ public class SwingUI {
             scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
             panel.add(scrollPane, BorderLayout.CENTER);
         }
+
+        JButton backButton = new JButton("Back");
+        backButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                showLoggedInHomePage();
+            }
+        });
+        panel.add(backButton, BorderLayout.SOUTH);
+
+        panel.revalidate();
+        panel.repaint();
+    }
+
+    private void showTambahStokPage() {
+        panel.removeAll();
+        panel.setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        JLabel kategoriLabel = new JLabel("Kategori Stok");
+        panel.add(kategoriLabel, gbc);
+
+        gbc.gridx = 1;
+        JTextField kategoriText = new JTextField(20);
+        panel.add(kategoriText, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        JLabel namaLabel = new JLabel("Nama Stok");
+        panel.add(namaLabel, gbc);
+
+        gbc.gridx = 1;
+        JTextField namaText = new JTextField(20);
+        panel.add(namaText, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        JLabel jumlahLabel = new JLabel("Jumlah");
+        panel.add(jumlahLabel, gbc);
+
+        gbc.gridx = 1;
+        JTextField jumlahText = new JTextField(20);
+        panel.add(jumlahText, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 3;
+        JLabel satuanLabel = new JLabel("Satuan");
+        panel.add(satuanLabel, gbc);
+
+        gbc.gridx = 1;
+        JTextField satuanText = new JTextField(20);
+        panel.add(satuanText, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 4;
+        JLabel gudangLabel = new JLabel("ID Gudang");
+        panel.add(gudangLabel, gbc);
+
+        gbc.gridx = 1;
+        JTextField gudangText = new JTextField(20);
+        panel.add(gudangText, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 5;
+        JButton backButton = new JButton("Back");
+        panel.add(backButton, gbc);
+
+        gbc.gridx = 1;
+        JButton addButton = new JButton("Add");
+        panel.add(addButton, gbc);
+
+        addButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                String kategori = kategoriText.getText();
+                String nama = namaText.getText();
+                int jumlah = Integer.parseInt(jumlahText.getText());
+                String satuan = satuanText.getText();
+                int idGudang = Integer.parseInt(gudangText.getText());
+                if (ems.isAdmin()) {
+                    manager.tambahStok(kategori, nama, jumlah, satuan, idGudang);
+                } else {
+                    ranger.tambahStok(kategori, nama, jumlah, satuan, idGudang);
+                }
+                JOptionPane.showMessageDialog(panel, "Stok berhasil ditambahkan!");
+                showCekStokPage(); // Refresh the stock page
+            }
+        });
+
+        backButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                showLoggedInHomePage();
+            }
+        });
+
+        panel.revalidate();
+        panel.repaint();
+    }
+
+    private void showUpdateStokPage() {
+        panel.removeAll();
+        panel.setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        JLabel idLabel = new JLabel("ID Stok");
+        panel.add(idLabel, gbc);
+
+        gbc.gridx = 1;
+        JTextField idText = new JTextField(20);
+        panel.add(idText, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        JLabel jumlahLabel = new JLabel("Jumlah");
+        panel.add(jumlahLabel, gbc);
+
+        gbc.gridx = 1;
+        JTextField jumlahText = new JTextField(20);
+        panel.add(jumlahText, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        JButton backButton = new JButton("Back");
+        panel.add(backButton, gbc);
+
+        gbc.gridx = 1;
+        JButton updateButton = new JButton("Update");
+        panel.add(updateButton, gbc);
+
+        updateButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                int id = Integer.parseInt(idText.getText());
+                int jumlah = Integer.parseInt(jumlahText.getText());
+                boolean updated;
+                if (ems.isAdmin()) {
+                    updated = manager.updateStok(id, jumlah);
+                } else {
+                    updated = ranger.updateStok(id, jumlah);
+                }
+                if (updated) {
+                    JOptionPane.showMessageDialog(panel, "Stok berhasil diperbarui!");
+                } else {
+                    JOptionPane.showMessageDialog(panel, "Stok tidak ditemukan!");
+                }
+                showCekStokPage(); // Refresh the stock page
+            }
+        });
+
+        backButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                showLoggedInHomePage();
+            }
+        });
+
+        panel.revalidate();
+        panel.repaint();
+    }
+
+    private void showDeleteStokPage() {
+        panel.removeAll();
+        panel.setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        JLabel idLabel = new JLabel("ID Stok");
+        panel.add(idLabel, gbc);
+
+        gbc.gridx = 1;
+        JTextField idText = new JTextField(20);
+        panel.add(idText, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        JButton backButton = new JButton("Back");
+        panel.add(backButton, gbc);
+
+        gbc.gridx = 1;
+        JButton deleteButton = new JButton("Delete");
+        panel.add(deleteButton, gbc);
+
+        deleteButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                int id = Integer.parseInt(idText.getText());
+                if (ems.isAdmin()) {
+                    manager.deleteStok(id);
+                } else {
+                    ranger.deleteStok(id);
+                }
+                JOptionPane.showMessageDialog(panel, "Stok berhasil dihapus!");
+                showCekStokPage(); // Refresh the stock page
+            }
+        });
+
+        backButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                showLoggedInHomePage();
+            }
+        });
+
+        panel.revalidate();
+        panel.repaint();
+    }
+
+    private void showCekStokPage() {
+        panel.removeAll();
+        panel.setLayout(new BorderLayout());
+
+        JLabel titleLabel = new JLabel("Stok");
+        titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 18));
+        panel.add(titleLabel, BorderLayout.NORTH);
+
+        String[] columnNames = {"ID", "Kategori", "Nama Stok", "Jumlah", "Satuan", "Gudang"};
+        ArrayList<Object[]> stokDataList = new ArrayList<>();
+        if (ems.isAdmin()) {
+            manager.cekStok(stokDataList);
+        } else {
+            ranger.cekStok(stokDataList);
+        }
+        Object[][] stokData = stokDataList.toArray(new Object[0][]);
+
+        DefaultTableModel model = new DefaultTableModel(stokData, columnNames) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false; // Make table cells non-editable
+            }
+        };
+
+        JTable table = new JTable(model);
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+        table.setFillsViewportHeight(true);
+        table.setRowHeight(30);
+        table.setFont(new Font("Arial", Font.PLAIN, 14));
+        table.getTableHeader().setFont(new Font("Arial", Font.BOLD, 16));
+        table.getTableHeader().setBackground(Color.LIGHT_GRAY);
+        table.setGridColor(Color.GRAY);
+
+        DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+        centerRenderer.setHorizontalAlignment(JLabel.CENTER);
+        for (int i = 0; i < table.getColumnCount(); i++) {
+            table.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
+        }
+
+        JScrollPane scrollPane = new JScrollPane(table);
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        panel.add(scrollPane, BorderLayout.CENTER);
 
         JButton backButton = new JButton("Back");
         backButton.addActionListener(new ActionListener() {

@@ -19,10 +19,12 @@ import java.util.Random;
  */
 public class Manager {
     private ArrayList<Employee> employees;
+    private Gudang gudang;
 
     public Manager() {
         employees = new ArrayList<>();
         loadEmployeesFromDatabase();
+        this.gudang = new Gudang(); // Initialize Gudang
     }
 
     private void loadEmployeesFromDatabase() {
@@ -214,5 +216,42 @@ public class Manager {
             e.printStackTrace();
         }
         return reportList.toArray(new Object[0][0]);
+    }
+
+    public void tambahStokMakanan(String namaStok, int jumlah) {
+        gudang.tambahStokMakanan(namaStok, jumlah);
+    }
+
+    public boolean updateStokMakanan(String namaStok, int jumlah) {
+        return gudang.updateStokMakanan(namaStok, jumlah);
+    }
+
+    public void deleteStokMakanan(String namaStok) {
+        gudang.deleteStokMakanan(namaStok);
+    }
+
+    public void cekStok(ArrayList<Object[]> stokDataList) {
+        gudang.cekStok(stokDataList);
+    }
+
+    public void tambahStok(String kategoriStok, String namaStok, int jumlah, String satuan, int idGudang) {
+        gudang.tambahStok(kategoriStok, namaStok, jumlah, satuan, idGudang);
+    }
+
+    public boolean updateStok(int idStok, int jumlah) {
+        boolean updated = gudang.updateStok(idStok, jumlah);
+        if (updated) {
+            gudang.loadStokFromDatabase(); // Refresh the list from the database
+        }
+        return updated;
+    }
+
+    public void deleteStok(int idStok) {
+        gudang.deleteStok(idStok);
+        gudang.loadStokFromDatabase(); // Refresh the list from the database
+    }
+
+    public void loadStokFromDatabase() {
+        gudang.loadStokFromDatabase();
     }
 }

@@ -17,10 +17,12 @@ import java.util.ArrayList;
 public class Ranger {
     private Kandang kandang;
     private Hewan hewan;
+    private Gudang gudang;
 
     public Ranger() {
         this.kandang = new Kandang(0, "", ""); // Initialize Kandang
         this.hewan = new Hewan("", 0, 0, 0.0); // Initialize Hewan
+        this.gudang = new Gudang(); // Initialize Gudang
     }
 
     public Object[][] viewKandangData() {
@@ -65,5 +67,42 @@ public class Ranger {
             e.printStackTrace();
         }
         return reportList.toArray(new Object[0][0]);
+    }
+
+    public void tambahStokMakanan(String namaStok, int jumlah) {
+        gudang.tambahStokMakanan(namaStok, jumlah);
+    }
+
+    public boolean updateStokMakanan(String namaStok, int jumlah) {
+        return gudang.updateStokMakanan(namaStok, jumlah);
+    }
+
+    public void deleteStokMakanan(String namaStok) {
+        gudang.deleteStokMakanan(namaStok);
+    }
+
+    public void cekStok(ArrayList<Object[]> stokDataList) {
+        gudang.cekStok(stokDataList);
+    }
+
+    public void tambahStok(String kategoriStok, String namaStok, int jumlah, String satuan, int idGudang) {
+        gudang.tambahStok(kategoriStok, namaStok, jumlah, satuan, idGudang);
+    }
+
+    public boolean updateStok(int idStok, int jumlah) {
+        boolean updated = gudang.updateStok(idStok, jumlah);
+        if (updated) {
+            gudang.loadStokFromDatabase(); // Refresh the list from the database
+        }
+        return updated;
+    }
+
+    public void deleteStok(int idStok) {
+        gudang.deleteStok(idStok);
+        gudang.loadStokFromDatabase(); // Refresh the list from the database
+    }
+
+    public void loadStokFromDatabase() {
+        gudang.loadStokFromDatabase();
     }
 }
