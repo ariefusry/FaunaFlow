@@ -36,7 +36,7 @@ public class Ranger {
 
     public void submitReport(String nama, String laporan) {
         try (Connection conn = FaunaFlowGG.getConnection()) {
-            String sql = "INSERT INTO Laporan (nama, laporan) VALUES (?, ?)";
+            String sql = "INSERT INTO Laporan (nama, laporan) VALUES (?, ?)"; // Remove explicit date input
             PreparedStatement stmt = conn.prepareStatement(sql);
             stmt.setString(1, nama);
             stmt.setString(2, laporan);
