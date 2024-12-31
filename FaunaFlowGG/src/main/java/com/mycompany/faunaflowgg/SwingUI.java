@@ -130,6 +130,7 @@ public class SwingUI {
         logoutMenuItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 ems.logout();
+                manager.loadStokFromDatabase(); // Reload stock data
                 showHomePage();
             }
         });
