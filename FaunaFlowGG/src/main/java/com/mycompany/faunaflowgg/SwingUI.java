@@ -581,7 +581,7 @@ public class SwingUI {
         panel.add(tipeLabel, gbc);
 
         gbc.gridx = 1;
-        JTextField tipeText = new JTextField(20);
+        JTextField tipeText = new JTextField(40); // Increase size
         panel.add(tipeText, gbc);
 
         gbc.gridx = 0;
@@ -590,7 +590,7 @@ public class SwingUI {
         panel.add(spesialitasLabel, gbc);
 
         gbc.gridx = 1;
-        JTextField spesialitasText = new JTextField(20);
+        JTextField spesialitasText = new JTextField(40); // Increase size
         panel.add(spesialitasText, gbc);
 
         gbc.gridx = 0;
