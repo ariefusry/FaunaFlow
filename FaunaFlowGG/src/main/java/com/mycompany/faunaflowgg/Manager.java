@@ -131,6 +131,12 @@ public class Manager {
         Random random = new Random();
 
         try (Connection conn = FaunaFlowGG.getConnection()) {
+            // Delete existing jobdesk data
+            String deleteSQL = "DELETE FROM JobdeskKaryawan";
+            try (PreparedStatement deleteStmt = conn.prepareStatement(deleteSQL)) {
+                deleteStmt.executeUpdate();
+            }
+
             String insertSQL = "INSERT INTO JobdeskKaryawan (nama_karyawan, senin, selasa, rabu, kamis, jumat, sabtu) VALUES (?, ?, ?, ?, ?, ?, ?)";
             List<Employee> employees = getEmployees();
 

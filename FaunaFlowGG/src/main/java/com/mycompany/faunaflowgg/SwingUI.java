@@ -203,6 +203,7 @@ public class SwingUI {
                 public void actionPerformed(ActionEvent e) {
                     manager.assignRandomJobdesks(); // Use Manager to assign random jobdesks
                     JOptionPane.showMessageDialog(panel, "Jobdesks assigned successfully!");
+                    showJobdeskKaryawanTable(); // Refresh the jobdesk table
                 }
             });
 
