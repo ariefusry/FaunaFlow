@@ -127,7 +127,7 @@ public class Manager {
     }
 
     public void assignRandomJobdesks() {
-        List<String> jobdesks = List.of("Membersihkan kandang", "Memberi makan hewan", "Merawat hewan", "Tour Guide");
+        List<String> jobdesks = List.of("Membersihkan kandang", "Memberi makan hewan", "Merawat hewan", "Tour Guide", "Merapihkan Gudang", "Mengurus Stok Gudang");
         Random random = new Random();
 
         try (Connection conn = FaunaFlowGG.getConnection()) {
