@@ -495,11 +495,17 @@ public class SwingUI {
 
         addButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                String name = nameText.getText();
-                int age = Integer.parseInt(ageText.getText());
-                String address = addressText.getText();
-                String phone = phoneText.getText();
-                manager.addEmployee(new Employee(0, name, age, address, phone)); // Use Manager to add employee
+                String name = nameText.getText().trim();
+                String age = ageText.getText().trim();
+                String address = addressText.getText().trim();
+                String phone = phoneText.getText().trim();
+
+                if (name.isEmpty() || age.isEmpty() || address.isEmpty() || phone.isEmpty()) {
+                    JOptionPane.showMessageDialog(panel, "Belum Terisi", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                manager.addEmployee(new Employee(0, name, Integer.parseInt(age), address, phone)); // Use Manager to add employee
                 JOptionPane.showMessageDialog(panel, "Employee added successfully!");
                 showLoggedInHomePage();
             }
@@ -581,8 +587,9 @@ public class SwingUI {
         panel.add(tipeLabel, gbc);
 
         gbc.gridx = 1;
-        JTextField tipeText = new JTextField(20);
-        panel.add(tipeText, gbc);
+        JTextArea tipeText = new JTextArea(5, 20); // Change to JTextArea
+        JScrollPane tipeScrollPane = new JScrollPane(tipeText);
+        panel.add(tipeScrollPane, gbc);
 
         gbc.gridx = 0;
         gbc.gridy = 2;
@@ -590,8 +597,9 @@ public class SwingUI {
         panel.add(spesialitasLabel, gbc);
 
         gbc.gridx = 1;
-        JTextField spesialitasText = new JTextField(20);
-        panel.add(spesialitasText, gbc);
+        JTextArea spesialitasText = new JTextArea(5, 20); // Change to JTextArea
+        JScrollPane spesialitasScrollPane = new JScrollPane(spesialitasText);
+        panel.add(spesialitasScrollPane, gbc);
 
         gbc.gridx = 0;
         gbc.gridy = 3;
@@ -604,9 +612,15 @@ public class SwingUI {
 
         addButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                String ukuran = ukuranText.getText();
-                String tipe = tipeText.getText();
-                String spesialitas = spesialitasText.getText();
+                String ukuran = ukuranText.getText().trim();
+                String tipe = tipeText.getText().trim();
+                String spesialitas = spesialitasText.getText().trim();
+
+                if (ukuran.isEmpty() || tipe.isEmpty() || spesialitas.isEmpty()) {
+                    JOptionPane.showMessageDialog(panel, "Belum Terisi", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
                 kandang.addKandang(ukuran, tipe, spesialitas); // Use Kandang instance to add kandang
                 JOptionPane.showMessageDialog(panel, "Kandang added successfully!");
                 showLoggedInHomePage();
@@ -731,11 +745,17 @@ public class SwingUI {
 
         addButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                String nama = namaText.getText();
-                int umur = Integer.parseInt(umurText.getText());
-                int jumlah = Integer.parseInt(jumlahText.getText());
-                double berat = Double.parseDouble(beratText.getText());
-                hewan.addHewan(nama, umur, jumlah, berat); // Use Hewan instance to add hewan
+                String nama = namaText.getText().trim();
+                String umur = umurText.getText().trim();
+                String jumlah = jumlahText.getText().trim();
+                String berat = beratText.getText().trim();
+
+                if (nama.isEmpty() || umur.isEmpty() || jumlah.isEmpty() || berat.isEmpty()) {
+                    JOptionPane.showMessageDialog(panel, "Belum Terisi", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                hewan.addHewan(nama, Integer.parseInt(umur), Integer.parseInt(jumlah), Double.parseDouble(berat)); // Use Hewan instance to add hewan
                 JOptionPane.showMessageDialog(panel, "Hewan added successfully!");
                 showLoggedInHomePage();
             }
@@ -1032,8 +1052,14 @@ public class SwingUI {
 
         submitButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                String nama = nameText.getText();
-                String laporan = reportText.getText();
+                String nama = nameText.getText().trim();
+                String laporan = reportText.getText().trim();
+
+                if (nama.isEmpty() || laporan.isEmpty()) {
+                    JOptionPane.showMessageDialog(panel, "Belum Terisi", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
                 ranger.submitReport(nama, laporan); // Use Ranger to submit report
                 JOptionPane.showMessageDialog(panel, "Report submitted successfully!");
                 showLoggedInHomePage();
@@ -1176,15 +1202,21 @@ public class SwingUI {
 
         addButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                String kategori = kategoriText.getText();
-                String nama = namaText.getText();
-                int jumlah = Integer.parseInt(jumlahText.getText());
-                String satuan = satuanText.getText();
-                int idGudang = Integer.parseInt(gudangText.getText());
+                String kategori = kategoriText.getText().trim();
+                String nama = namaText.getText().trim();
+                String jumlah = jumlahText.getText().trim();
+                String satuan = satuanText.getText().trim();
+                String gudang = gudangText.getText().trim();
+
+                if (kategori.isEmpty() || nama.isEmpty() || jumlah.isEmpty() || satuan.isEmpty() || gudang.isEmpty()) {
+                    JOptionPane.showMessageDialog(panel, "Belum Terisi", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
                 if (ems.isAdmin()) {
-                    manager.tambahStok(kategori, nama, jumlah, satuan, idGudang);
+                    manager.tambahStok(kategori, nama, Integer.parseInt(jumlah), satuan, Integer.parseInt(gudang));
                 } else {
-                    ranger.tambahStok(kategori, nama, jumlah, satuan, idGudang);
+                    ranger.tambahStok(kategori, nama, Integer.parseInt(jumlah), satuan, Integer.parseInt(gudang));
                 }
                 JOptionPane.showMessageDialog(panel, "Stok berhasil ditambahkan!");
                 showCekStokPage(); // Refresh the stock page
@@ -1237,13 +1269,19 @@ public class SwingUI {
 
         updateButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                int id = Integer.parseInt(idText.getText());
-                int jumlah = Integer.parseInt(jumlahText.getText());
+                String id = idText.getText().trim();
+                String jumlah = jumlahText.getText().trim();
+
+                if (id.isEmpty() || jumlah.isEmpty()) {
+                    JOptionPane.showMessageDialog(panel, "Belum Terisi", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
                 boolean updated;
                 if (ems.isAdmin()) {
-                    updated = manager.updateStok(id, jumlah);
+                    updated = manager.updateStok(Integer.parseInt(id), Integer.parseInt(jumlah));
                 } else {
-                    updated = ranger.updateStok(id, jumlah);
+                    updated = ranger.updateStok(Integer.parseInt(id), Integer.parseInt(jumlah));
                 }
                 if (updated) {
                     JOptionPane.showMessageDialog(panel, "Stok berhasil diperbarui!");
@@ -1291,11 +1329,17 @@ public class SwingUI {
 
         deleteButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                int id = Integer.parseInt(idText.getText());
+                String id = idText.getText().trim();
+
+                if (id.isEmpty()) {
+                    JOptionPane.showMessageDialog(panel, "Belum Terisi", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
                 if (ems.isAdmin()) {
-                    manager.deleteStok(id);
+                    manager.deleteStok(Integer.parseInt(id));
                 } else {
-                    ranger.deleteStok(id);
+                    ranger.deleteStok(Integer.parseInt(id));
                 }
                 JOptionPane.showMessageDialog(panel, "Stok berhasil dihapus!");
                 showCekStokPage(); // Refresh the stock page

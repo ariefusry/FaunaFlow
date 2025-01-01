@@ -35,6 +35,11 @@ public class Ranger {
     }
 
     public void submitReport(String nama, String laporan) {
+        if (nama == null || nama.trim().isEmpty() || laporan == null || laporan.trim().isEmpty()) {
+            System.out.println("Nama atau laporan tidak boleh kosong.");
+            return;
+        }
+
         try (Connection conn = FaunaFlowGG.getConnection()) {
             String sql = "INSERT INTO Laporan (nama, laporan) VALUES (?, ?)"; // Remove explicit date input
             PreparedStatement stmt = conn.prepareStatement(sql);
