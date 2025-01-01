@@ -177,9 +177,9 @@ public class SwingUI {
             JMenuItem employeeListMenuItem = new JMenuItem("Employee List");
             JMenuItem addEmployeeMenuItem = new JMenuItem("Add Employee");
             JMenuItem removeEmployeeMenuItem = new JMenuItem("Remove Employee");
-            JMenuItem assignJobdeskMenuItem = new JMenuItem("Assign Random Jobdesks"); // New menu item
-            JMenuItem deleteAllJobdeskMenuItem = new JMenuItem("Delete All Jobdesks"); // New menu item
-            JMenuItem viewReportsMenuItem = new JMenuItem("View Reports"); // New menu item
+            JMenuItem assignJobdeskMenuItem = new JMenuItem("Assign Random Jobdesks");
+            JMenuItem deleteAllJobdeskMenuItem = new JMenuItem("Delete All Jobdesks");
+            JMenuItem viewReportsMenuItem = new JMenuItem("View Reports");
 
             employeeListMenuItem.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
@@ -224,16 +224,15 @@ public class SwingUI {
             employeeMenu.add(employeeListMenuItem);
             employeeMenu.add(addEmployeeMenuItem);
             employeeMenu.add(removeEmployeeMenuItem);
-            employeeMenu.add(assignJobdeskMenuItem); // Add new menu item
-            employeeMenu.add(deleteAllJobdeskMenuItem); // Add new menu item
-            employeeMenu.add(viewReportsMenuItem); // Add new menu item
+            employeeMenu.add(assignJobdeskMenuItem);
+            employeeMenu.add(deleteAllJobdeskMenuItem);
+            employeeMenu.add(viewReportsMenuItem);
             menuBar.add(employeeMenu);
 
+            JMenu kandangManagementMenu = new JMenu("Kandang Management");
             JMenuItem addKandangMenuItem = new JMenuItem("Add Kandang");
             JMenuItem setHewanToKandangMenuItem = new JMenuItem("Set Hewan to Kandang");
-            JMenuItem addHewanMenuItem = new JMenuItem("Add Hewan");
             JMenuItem deleteKandangMenuItem = new JMenuItem("Delete Kandang");
-            JMenuItem deleteHewanMenuItem = new JMenuItem("Delete Hewan");
 
             addKandangMenuItem.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
@@ -247,15 +246,24 @@ public class SwingUI {
                 }
             });
 
-            addHewanMenuItem.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    showAddHewanPage();
-                }
-            });
-
             deleteKandangMenuItem.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     showDeleteKandangPage();
+                }
+            });
+
+            kandangManagementMenu.add(addKandangMenuItem);
+            kandangManagementMenu.add(setHewanToKandangMenuItem);
+            kandangManagementMenu.add(deleteKandangMenuItem);
+            kandangMenu.add(kandangManagementMenu);
+
+            JMenu hewanManagementMenu = new JMenu("Hewan Management");
+            JMenuItem addHewanMenuItem = new JMenuItem("Add Hewan");
+            JMenuItem deleteHewanMenuItem = new JMenuItem("Delete Hewan");
+
+            addHewanMenuItem.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    showAddHewanPage();
                 }
             });
 
@@ -265,15 +273,13 @@ public class SwingUI {
                 }
             });
 
-            kandangMenu.add(addKandangMenuItem);
-            kandangMenu.add(setHewanToKandangMenuItem);
-            kandangMenu.add(deleteKandangMenuItem);
-            hewanMenu.add(addHewanMenuItem);
-            hewanMenu.add(deleteHewanMenuItem);
+            hewanManagementMenu.add(addHewanMenuItem);
+            hewanManagementMenu.add(deleteHewanMenuItem);
+            hewanMenu.add(hewanManagementMenu);
         } else if (ems.isUser()) { // Check user role
             JMenu reportMenu = new JMenu("Report");
             JMenuItem submitReportMenuItem = new JMenuItem("Submit Report");
-            JMenuItem viewReportsMenuItem = new JMenuItem("View Reports"); // New menu item
+            JMenuItem viewReportsMenuItem = new JMenuItem("View Reports");
 
             submitReportMenuItem.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
@@ -288,7 +294,7 @@ public class SwingUI {
             });
 
             reportMenu.add(submitReportMenuItem);
-            reportMenu.add(viewReportsMenuItem); // Add new menu item
+            reportMenu.add(viewReportsMenuItem);
             menuBar.add(reportMenu);
         }
 
