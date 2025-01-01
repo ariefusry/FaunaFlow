@@ -581,9 +581,8 @@ public class SwingUI {
         panel.add(tipeLabel, gbc);
 
         gbc.gridx = 1;
-        JTextArea tipeText = new JTextArea(5, 20); // Change to JTextArea
-        JScrollPane tipeScrollPane = new JScrollPane(tipeText);
-        panel.add(tipeScrollPane, gbc);
+        JTextField tipeText = new JTextField(20);
+        panel.add(tipeText, gbc);
 
         gbc.gridx = 0;
         gbc.gridy = 2;
@@ -591,9 +590,8 @@ public class SwingUI {
         panel.add(spesialitasLabel, gbc);
 
         gbc.gridx = 1;
-        JTextArea spesialitasText = new JTextArea(5, 20); // Change to JTextArea
-        JScrollPane spesialitasScrollPane = new JScrollPane(spesialitasText);
-        panel.add(spesialitasScrollPane, gbc);
+        JTextField spesialitasText = new JTextField(20);
+        panel.add(spesialitasText, gbc);
 
         gbc.gridx = 0;
         gbc.gridy = 3;
@@ -607,14 +605,8 @@ public class SwingUI {
         addButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 String ukuran = ukuranText.getText();
-                String tipe = tipeText.getText().trim();
-                String spesialitas = spesialitasText.getText().trim();
-
-                if (tipe.isEmpty() || spesialitas.isEmpty()) {
-                    JOptionPane.showMessageDialog(panel, "Belum Terisi", "Error", JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-
+                String tipe = tipeText.getText();
+                String spesialitas = spesialitasText.getText();
                 kandang.addKandang(ukuran, tipe, spesialitas); // Use Kandang instance to add kandang
                 JOptionPane.showMessageDialog(panel, "Kandang added successfully!");
                 showLoggedInHomePage();
