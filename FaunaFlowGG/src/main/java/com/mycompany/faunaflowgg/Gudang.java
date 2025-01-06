@@ -143,31 +143,8 @@ public class Gudang {
             stokDataList.add(new Object[]{"Tidak ada stok tersedia.", "", "", "", ""});
         } else {
             for (Stok stok : stokList) {
-                stokDataList.add(new Object[]{stok.idStok, stok.kategoriStok, stok.namaStok, stok.jumlah, stok.satuan, stok.namaGudang});
+                stokDataList.add(new Object[]{stok.getIdStok(), stok.getKategoriStok(), stok.getNamaStok(), stok.getJumlah(), stok.getSatuan(), stok.getNamaGudang()});
             }
-        }
-    }
-
-    private class Stok {
-        private int idStok;
-        private String kategoriStok;
-        private String namaStok;
-        private int jumlah;
-        private String satuan;
-        private String namaGudang;
-
-        public Stok(int idStok, String kategoriStok, String namaStok, int jumlah, String satuan, String namaGudang) {
-            this.idStok = idStok;
-            this.kategoriStok = kategoriStok;
-            this.namaStok = namaStok;
-            this.jumlah = jumlah;
-            this.satuan = satuan;
-            this.namaGudang = namaGudang;
-        }
-
-        @Override
-        public String toString() {
-            return "ID: " + idStok + ", Kategori: " + kategoriStok + ", Nama: " + namaStok + ", Jumlah: " + jumlah + " " + satuan + ", Gudang: " + namaGudang;
         }
     }
 }
