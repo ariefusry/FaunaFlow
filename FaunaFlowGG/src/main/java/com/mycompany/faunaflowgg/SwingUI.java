@@ -555,7 +555,12 @@ public class SwingUI {
 
         removeButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                int id = Integer.parseInt(idText.getText());
+                String idStr = idText.getText().trim();
+                if (idStr.isEmpty()) {
+                    JOptionPane.showMessageDialog(panel, "Employee ID tidak boleh kosong.", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                int id = Integer.parseInt(idStr);
                 manager.removeEmployee(id); // Use Manager to remove employee
                 JOptionPane.showMessageDialog(panel, "Employee removed successfully!");
                 showLoggedInHomePage();
@@ -595,6 +600,8 @@ public class SwingUI {
 
         gbc.gridx = 1;
         JTextArea tipeText = new JTextArea(5, 20); // Change to JTextArea
+        tipeText.setLineWrap(true); // Enable line wrap
+        tipeText.setWrapStyleWord(true); // Wrap at word boundaries
         JScrollPane tipeScrollPane = new JScrollPane(tipeText);
         panel.add(tipeScrollPane, gbc);
 
@@ -605,6 +612,8 @@ public class SwingUI {
 
         gbc.gridx = 1;
         JTextArea spesialitasText = new JTextArea(5, 20); // Change to JTextArea
+        spesialitasText.setLineWrap(true); // Enable line wrap
+        spesialitasText.setWrapStyleWord(true); // Wrap at word boundaries
         JScrollPane spesialitasScrollPane = new JScrollPane(spesialitasText);
         panel.add(spesialitasScrollPane, gbc);
 
@@ -624,7 +633,7 @@ public class SwingUI {
                 String spesialitas = spesialitasText.getText().trim();
 
                 if (ukuran.isEmpty() || tipe.isEmpty() || spesialitas.isEmpty()) {
-                    JOptionPane.showMessageDialog(panel, "Belum Terisi", "Error", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(panel, "Ukuran, Tipe, dan Spesialitas tidak boleh kosong.", "Error", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
 
@@ -680,8 +689,14 @@ public class SwingUI {
 
         setButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                int idKandang = Integer.parseInt(idKandangText.getText());
-                int idHewan = Integer.parseInt(idHewanText.getText());
+                String idKandangStr = idKandangText.getText().trim();
+                String idHewanStr = idHewanText.getText().trim();
+                if (idKandangStr.isEmpty() || idHewanStr.isEmpty()) {
+                    JOptionPane.showMessageDialog(panel, "ID Kandang dan ID Hewan tidak boleh kosong.", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                int idKandang = Integer.parseInt(idKandangStr);
+                int idHewan = Integer.parseInt(idHewanStr);
                 manager.setHewanToKandang(idKandang, idHewan); // Use Manager to set hewan to kandang
                 JOptionPane.showMessageDialog(panel, "Hewan set to kandang successfully!");
                 showLoggedInHomePage();
@@ -961,7 +976,12 @@ public class SwingUI {
 
         deleteButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                int id = Integer.parseInt(idText.getText());
+                String idStr = idText.getText().trim();
+                if (idStr.isEmpty()) {
+                    JOptionPane.showMessageDialog(panel, "Kandang ID tidak boleh kosong.", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                int id = Integer.parseInt(idStr);
                 kandang.deleteKandang(id); // Use Kandang instance to delete kandang
                 JOptionPane.showMessageDialog(panel, "Kandang deleted successfully!");
                 showLoggedInHomePage();
@@ -1005,7 +1025,12 @@ public class SwingUI {
 
         deleteButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                int id = Integer.parseInt(idText.getText());
+                String idStr = idText.getText().trim();
+                if (idStr.isEmpty()) {
+                    JOptionPane.showMessageDialog(panel, "Hewan ID tidak boleh kosong.", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                int id = Integer.parseInt(idStr);
                 hewan.deleteHewan(id); // Use Hewan instance to delete hewan
                 JOptionPane.showMessageDialog(panel, "Hewan deleted successfully!");
                 showLoggedInHomePage();
@@ -1045,6 +1070,8 @@ public class SwingUI {
 
         gbc.gridx = 1;
         JTextArea reportText = new JTextArea(5, 20);
+        reportText.setLineWrap(true); // Enable line wrap
+        reportText.setWrapStyleWord(true); // Wrap at word boundaries
         JScrollPane scrollPane = new JScrollPane(reportText);
         panel.add(scrollPane, gbc);
 
