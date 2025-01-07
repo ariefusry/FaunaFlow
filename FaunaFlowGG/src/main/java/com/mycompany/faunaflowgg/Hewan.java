@@ -66,6 +66,29 @@ public class Hewan {
         return hewanList.toArray(new Object[0][0]);
     }
 
+    public Object[] getHewanById(int idHewan) {
+        try (Connection conn = FaunaFlowGG.getConnection()) {
+            String sql = "SELECT * FROM hewan WHERE idHewan = ?";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setInt(1, idHewan);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return new Object[]{
+                    rs.getInt("idHewan"),
+                    rs.getString("nama"),
+                    rs.getInt("umur"),
+                    rs.getInt("jumlah"),
+                    rs.getDouble("berat")
+                };
+            }
+        } catch (SQLException e) {
+            System.out.println("Error getting hewan by ID from database: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     public void deleteHewan(int idHewan) {
         try (Connection conn = FaunaFlowGG.getConnection()) {
             String sql = "DELETE FROM hewan WHERE idHewan = ?";
@@ -75,6 +98,22 @@ public class Hewan {
             System.out.println("Hewan deleted successfully!");
         } catch (SQLException e) {
             System.out.println("Error deleting hewan from database: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    public void editHewan(int idHewan, int umur, int jumlah, double berat) {
+        try (Connection conn = FaunaFlowGG.getConnection()) {
+            String sql = "UPDATE hewan SET umur = ?, jumlah = ?, berat = ? WHERE idHewan = ?";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setInt(1, umur);
+            stmt.setInt(2, jumlah);
+            stmt.setDouble(3, berat);
+            stmt.setInt(4, idHewan);
+            stmt.executeUpdate();
+            System.out.println("Hewan edited successfully!");
+        } catch (SQLException e) {
+            System.out.println("Error editing hewan in database: " + e.getMessage());
             e.printStackTrace();
         }
     }

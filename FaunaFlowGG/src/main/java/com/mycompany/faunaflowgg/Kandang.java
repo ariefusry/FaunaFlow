@@ -98,4 +98,42 @@ public class Kandang {
             e.printStackTrace();
         }
     }
+
+    public void editKandang(int idKandang, String ukuran, String tipe, String spesialitas) {
+        try (Connection conn = FaunaFlowGG.getConnection()) {
+            String sql = "UPDATE kandang SET ukuran = ?, tipe = ?, spesialitas = ? WHERE id = ?";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setString(1, ukuran);
+            stmt.setString(2, tipe);
+            stmt.setString(3, spesialitas);
+            stmt.setInt(4, idKandang);
+            stmt.executeUpdate();
+            System.out.println("Kandang edited successfully!");
+        } catch (SQLException e) {
+            System.out.println("Error editing kandang in database: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    public Object[] getKandangById(int idKandang) {
+        try (Connection conn = FaunaFlowGG.getConnection()) {
+            String sql = "SELECT * FROM kandang WHERE id = ?";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setInt(1, idKandang);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return new Object[]{
+                    rs.getInt("id"),
+                    rs.getDouble("ukuran"),
+                    rs.getString("tipe"),
+                    rs.getString("spesialitas")
+                };
+            }
+        } catch (SQLException e) {
+            System.out.println("Error getting kandang by ID from database: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return null;
+    }
 }

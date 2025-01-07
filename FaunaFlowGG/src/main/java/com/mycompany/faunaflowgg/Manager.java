@@ -267,4 +267,88 @@ public class Manager {
     public void loadStokFromDatabase() {
         gudang.loadStokFromDatabase();
     }
+
+    public void editEmployee(int idEmployee, String name, int age, String address, String phone) {
+        try (Connection conn = FaunaFlowGG.getConnection()) {
+            String sql = "UPDATE employee SET nama = ?, usia = ?, alamat = ?, notel = ? WHERE id = ?";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setString(1, name);
+            stmt.setInt(2, age);
+            stmt.setString(3, address);
+            stmt.setString(4, phone);
+            stmt.setInt(5, idEmployee);
+            stmt.executeUpdate();
+            loadEmployeesFromDatabase(); // Refresh the list from the database
+            System.out.println("Employee edited successfully!");
+        } catch (SQLException e) {
+            System.out.println("Error editing employee in database: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    public Employee getEmployeeById(int idEmployee) {
+        try (Connection conn = FaunaFlowGG.getConnection()) {
+            String sql = "SELECT * FROM employee WHERE id = ?"; // Table name: employee
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setInt(1, idEmployee);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return new Employee(
+                    rs.getInt("id"),
+                    rs.getString("nama"),
+                    rs.getInt("usia"),
+                    rs.getString("alamat"),
+                    rs.getString("notel")
+                );
+            }
+        } catch (SQLException e) {
+            System.out.println("Error getting employee by ID from database: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public Stok getStokById(int idStok) {
+        try (Connection conn = FaunaFlowGG.getConnection()) {
+            String sql = "SELECT s.idStok, s.kategoriStok, s.namaStok, s.jumlahStok, s.Satuan, g.namaGudang " +
+                         "FROM Stok s JOIN Gudang g ON s.idGudang = g.idGudang WHERE s.idStok = ?";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setInt(1, idStok);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return new Stok(
+                    rs.getInt("idStok"),
+                    rs.getString("kategoriStok"),
+                    rs.getString("namaStok"),
+                    rs.getInt("jumlahStok"),
+                    rs.getString("Satuan"),
+                    rs.getString("namaGudang")
+                );
+            }
+        } catch (SQLException e) {
+            System.out.println("Error getting stok by ID from database: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public void updateStok(int idStok, String kategori, String nama, int jumlah, String satuan, String gudang) {
+        try (Connection conn = FaunaFlowGG.getConnection()) {
+            String sql = "UPDATE Stok SET kategoriStok = ?, namaStok = ?, jumlahStok = ?, Satuan = ?, idGudang = " +
+                         "(SELECT idGudang FROM Gudang WHERE namaGudang = ?) WHERE idStok = ?";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setString(1, kategori);
+            stmt.setString(2, nama);
+            stmt.setInt(3, jumlah);
+            stmt.setString(4, satuan);
+            stmt.setString(5, gudang);
+            stmt.setInt(6, idStok);
+            stmt.executeUpdate();
+            this.gudang.loadStokFromDatabase(); // Refresh the list from the database
+            System.out.println("Stok updated successfully!");
+        } catch (SQLException e) {
+            System.out.println("Error updating stok in database: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
 }

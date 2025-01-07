@@ -13,8 +13,6 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 
 public class SwingUI {
     private EmployeeManagementSystem ems;
@@ -31,9 +29,16 @@ public class SwingUI {
         this.kandang = new Kandang(0, "", ""); // Initialize Kandang
         this.hewan = new Hewan("", 0, 0, 0.0); // Initialize Hewan with parameters
         this.ranger = new Ranger(); // Initialize Ranger
+
+        // Membuat JFrame
         frame = new JFrame("FaunaFlow");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(600, 400);
+
+        // Atur mode fullscreen
+        frame.setExtendedState(JFrame.MAXIMIZED_BOTH); // Memaksimalkan jendela
+        frame.setSize(800, 600);
+
+        // Atur panel
         panel = new JPanel(new GridBagLayout());
         frame.add(panel);
     }
@@ -180,6 +185,7 @@ public class SwingUI {
             JMenuItem assignJobdeskMenuItem = new JMenuItem("Assign Random Jobdesks");
             JMenuItem deleteAllJobdeskMenuItem = new JMenuItem("Delete All Jobdesks");
             JMenuItem viewReportsMenuItem = new JMenuItem("View Reports");
+            JMenuItem editEmployeeMenuItem = new JMenuItem("Edit Employee");
 
             employeeListMenuItem.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
@@ -221,11 +227,20 @@ public class SwingUI {
                 }
             });
 
+            editEmployeeMenuItem.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    showEditEmployeePage();
+                }
+            });
+
             employeeMenu.add(employeeListMenuItem);
             employeeMenu.add(addEmployeeMenuItem);
             employeeMenu.add(removeEmployeeMenuItem);
+            employeeMenu.add(editEmployeeMenuItem);
+            employeeMenu.addSeparator();
             employeeMenu.add(assignJobdeskMenuItem);
             employeeMenu.add(deleteAllJobdeskMenuItem);
+            employeeMenu.addSeparator();
             employeeMenu.add(viewReportsMenuItem);
             menuBar.add(employeeMenu);
 
@@ -233,6 +248,7 @@ public class SwingUI {
             JMenuItem addKandangMenuItem = new JMenuItem("Add Kandang");
             JMenuItem setHewanToKandangMenuItem = new JMenuItem("Set Hewan to Kandang");
             JMenuItem deleteKandangMenuItem = new JMenuItem("Delete Kandang");
+            JMenuItem editKandangMenuItem = new JMenuItem("Edit Kandang");
 
             addKandangMenuItem.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
@@ -252,14 +268,22 @@ public class SwingUI {
                 }
             });
 
+            editKandangMenuItem.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    showEditKandangPage();
+                }
+            });
+
             kandangManagementMenu.add(addKandangMenuItem);
             kandangManagementMenu.add(setHewanToKandangMenuItem);
             kandangManagementMenu.add(deleteKandangMenuItem);
+            kandangManagementMenu.add(editKandangMenuItem);
             kandangMenu.add(kandangManagementMenu);
 
             JMenu hewanManagementMenu = new JMenu("Hewan Management");
             JMenuItem addHewanMenuItem = new JMenuItem("Add Hewan");
             JMenuItem deleteHewanMenuItem = new JMenuItem("Delete Hewan");
+            JMenuItem editHewanMenuItem = new JMenuItem("Edit Hewan");
 
             addHewanMenuItem.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
@@ -273,8 +297,15 @@ public class SwingUI {
                 }
             });
 
+            editHewanMenuItem.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    showEditHewanPage();
+                }
+            });
+
             hewanManagementMenu.add(addHewanMenuItem);
             hewanManagementMenu.add(deleteHewanMenuItem);
+            hewanManagementMenu.add(editHewanMenuItem);
             hewanMenu.add(hewanManagementMenu);
         } else if (ems.isUser()) { // Check user role
             JMenu reportMenu = new JMenu("Report");
@@ -380,6 +411,9 @@ public class SwingUI {
         panel.add(scrollPane, BorderLayout.CENTER);
 
         JButton backButton = new JButton("Back");
+        //Styling
+        backButton.setBackground(Color.decode("#2c52b3")); // Warna biru
+        backButton.setForeground(Color.white);
         backButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 showLoggedInHomePage();
@@ -420,10 +454,16 @@ public class SwingUI {
         gbc.gridy = 2;
         JButton backButton = new JButton("Back");
         panel.add(backButton, gbc);
+        //Styling
+        backButton.setBackground(Color.decode("#2c52b3")); // Warna biru
+        backButton.setForeground(Color.white);
 
         gbc.gridx = 1;
         JButton loginButton = new JButton("Login");
         panel.add(loginButton, gbc);
+        //Styling
+        loginButton.setBackground(Color.decode("#79AC78")); // Warna hijau
+        loginButton.setForeground(Color.white);
 
         loginButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -495,10 +535,16 @@ public class SwingUI {
         gbc.gridy = 4;
         JButton backButton = new JButton("Back");
         panel.add(backButton, gbc);
+        //Styling
+        backButton.setBackground(Color.decode("#2c52b3")); // Warna biru
+        backButton.setForeground(Color.white);
 
         gbc.gridx = 1;
         JButton addButton = new JButton("Add");
         panel.add(addButton, gbc);
+        //Styling
+        addButton.setBackground(Color.decode("#79AC78")); // Warna hijau
+        addButton.setForeground(Color.white);
 
         addButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -535,8 +581,47 @@ public class SwingUI {
         gbc.insets = new Insets(5, 5, 5, 5);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
+        // Display all employee data
+        String[] columnNames = {"ID", "Name", "Age", "Address", "Phone"};
+        Object[][] data = manager.getEmployeeData(); // Use Manager instance to get employee data
+
+        if (data.length == 0) {
+            JLabel noDataLabel = new JLabel("No Employee data available.");
+            noDataLabel.setHorizontalAlignment(SwingConstants.CENTER);
+            panel.add(noDataLabel, gbc);
+        } else {
+            DefaultTableModel model = new DefaultTableModel(data, columnNames) {
+                @Override
+                public boolean isCellEditable(int row, int column) {
+                    return false; // Make table cells non-editable
+                }
+            };
+
+            JTable table = new JTable(model);
+            table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+            table.setFillsViewportHeight(true);
+            table.setRowHeight(30);
+            table.setFont(new Font("Arial", Font.PLAIN, 14));
+            table.getTableHeader().setFont(new Font("Arial", Font.BOLD, 16));
+            table.getTableHeader().setBackground(Color.LIGHT_GRAY);
+            table.setGridColor(Color.GRAY);
+
+            DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+            centerRenderer.setHorizontalAlignment(JLabel.CENTER);
+            for (int i = 0; i < table.getColumnCount(); i++) {
+                table.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
+            }
+
+            JScrollPane scrollPane = new JScrollPane(table);
+            gbc.gridx = 0;
+            gbc.gridy = 0;
+            gbc.gridwidth = 2;
+            panel.add(scrollPane, gbc);
+            gbc.gridwidth = 1;
+        }
+
         gbc.gridx = 0;
-        gbc.gridy = 0;
+        gbc.gridy = 1;
         JLabel idLabel = new JLabel("Employee ID");
         panel.add(idLabel, gbc);
 
@@ -545,13 +630,19 @@ public class SwingUI {
         panel.add(idText, gbc);
 
         gbc.gridx = 0;
-        gbc.gridy = 1;
+        gbc.gridy = 2;
         JButton backButton = new JButton("Back");
         panel.add(backButton, gbc);
+        //Styling
+        backButton.setBackground(Color.decode("#2c52b3")); // Warna biru
+        backButton.setForeground(Color.white);
 
         gbc.gridx = 1;
         JButton removeButton = new JButton("Remove");
         panel.add(removeButton, gbc);
+        //Styling
+        removeButton.setBackground(Color.decode("#FF0000")); // Warna merah
+        removeButton.setForeground(Color.white);
 
         removeButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -621,11 +712,17 @@ public class SwingUI {
         gbc.gridy = 3;
         JButton backButton = new JButton("Back");
         panel.add(backButton, gbc);
+        //Styling
+        backButton.setBackground(Color.decode("#2c52b3")); // Warna biru
+        backButton.setForeground(Color.white);
 
         gbc.gridx = 1;
         JButton addButton = new JButton("Add");
         panel.add(addButton, gbc);
-
+        //Styling
+        addButton.setBackground(Color.decode("#79AC78")); // Warna hijau
+        addButton.setForeground(Color.white);
+        
         addButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 String ukuran = ukuranText.getText().trim();
@@ -660,8 +757,100 @@ public class SwingUI {
         gbc.insets = new Insets(5, 5, 5, 5);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
+        // Display all kandang data
+        String[] kandangColumnNames = {"ID", "Ukuran", "Tipe", "Spesialitas"};
+        Object[][] kandangData = kandang.getKandangData(); // Use Kandang instance to get kandang data
+
+        if (kandangData.length == 0) {
+            JLabel noKandangDataLabel = new JLabel("No Kandang data available.");
+            noKandangDataLabel.setHorizontalAlignment(SwingConstants.CENTER);
+            gbc.gridx = 0;
+            gbc.gridy = 0;
+            gbc.gridwidth = 2;
+            panel.add(noKandangDataLabel, gbc);
+            gbc.gridwidth = 1;
+        } else {
+            DefaultTableModel kandangModel = new DefaultTableModel(kandangData, kandangColumnNames) {
+                @Override
+                public boolean isCellEditable(int row, int column) {
+                    return false; // Make table cells non-editable
+                }
+            };
+
+            JTable kandangTable = new JTable(kandangModel);
+            kandangTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+            kandangTable.setFillsViewportHeight(true);
+            kandangTable.setRowHeight(30);
+            kandangTable.setFont(new Font("Arial", Font.PLAIN, 14));
+            kandangTable.getTableHeader().setFont(new Font("Arial", Font.BOLD, 16));
+            kandangTable.getTableHeader().setBackground(Color.LIGHT_GRAY);
+            kandangTable.setGridColor(Color.GRAY);
+
+            DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+            centerRenderer.setHorizontalAlignment(JLabel.CENTER);
+            for (int i = 0; i < kandangTable.getColumnCount(); i++) {
+                kandangTable.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
+            }
+
+            JScrollPane kandangScrollPane = new JScrollPane(kandangTable);
+            kandangScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+            kandangScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+            gbc.gridx = 0;
+            gbc.gridy = 0;
+            gbc.gridwidth = 1;
+            gbc.gridheight = 4;
+            panel.add(kandangScrollPane, gbc);
+        }
+
+        // Display all hewan data
+        String[] hewanColumnNames = {"ID", "Nama", "Umur", "Jumlah", "Berat"};
+        Object[][] hewanData = hewan.getHewanData(); // Use Hewan instance to get hewan data
+
+        if (hewanData.length == 0) {
+            JLabel noHewanDataLabel = new JLabel("No Hewan data available.");
+            noHewanDataLabel.setHorizontalAlignment(SwingConstants.CENTER);
+            gbc.gridx = 1;
+            gbc.gridy = 0;
+            gbc.gridwidth = 2;
+            panel.add(noHewanDataLabel, gbc);
+            gbc.gridwidth = 1;
+        } else {
+            DefaultTableModel hewanModel = new DefaultTableModel(hewanData, hewanColumnNames) {
+                @Override
+                public boolean isCellEditable(int row, int column) {
+                    return false; // Make table cells non-editable
+                }
+            };
+
+            JTable hewanTable = new JTable(hewanModel);
+            hewanTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+            hewanTable.setFillsViewportHeight(true);
+            hewanTable.setRowHeight(30);
+            hewanTable.setFont(new Font("Arial", Font.PLAIN, 14));
+            hewanTable.getTableHeader().setFont(new Font("Arial", Font.BOLD, 16));
+            hewanTable.getTableHeader().setBackground(Color.LIGHT_GRAY);
+            hewanTable.setGridColor(Color.GRAY);
+
+            DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+            centerRenderer.setHorizontalAlignment(JLabel.CENTER);
+            for (int i = 0; i < hewanTable.getColumnCount(); i++) {
+                hewanTable.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
+            }
+
+            JScrollPane hewanScrollPane = new JScrollPane(hewanTable);
+            hewanScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+            hewanScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+            gbc.gridx = 1;
+            gbc.gridy = 0;
+            gbc.gridwidth = 1;
+            gbc.gridheight = 4;
+            panel.add(hewanScrollPane, gbc);
+        }
+
         gbc.gridx = 0;
-        gbc.gridy = 0;
+        gbc.gridy = 4;
+        gbc.gridwidth = 1;
+        gbc.gridheight = 1;
         JLabel idKandangLabel = new JLabel("ID Kandang");
         panel.add(idKandangLabel, gbc);
 
@@ -670,7 +859,7 @@ public class SwingUI {
         panel.add(idKandangText, gbc);
 
         gbc.gridx = 0;
-        gbc.gridy = 1;
+        gbc.gridy = 5;
         JLabel idHewanLabel = new JLabel("ID Hewan");
         panel.add(idHewanLabel, gbc);
 
@@ -679,13 +868,19 @@ public class SwingUI {
         panel.add(idHewanText, gbc);
 
         gbc.gridx = 0;
-        gbc.gridy = 2;
+        gbc.gridy = 6;
         JButton backButton = new JButton("Back");
         panel.add(backButton, gbc);
+        //Styling
+        backButton.setBackground(Color.decode("#2c52b3")); // Warna biru
+        backButton.setForeground(Color.white);
 
         gbc.gridx = 1;
         JButton setButton = new JButton("Set");
         panel.add(setButton, gbc);
+        //Styling
+        setButton.setBackground(Color.decode("#79AC78")); // Warna hijau
+        setButton.setForeground(Color.white);
 
         setButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -760,11 +955,17 @@ public class SwingUI {
         gbc.gridy = 4;
         JButton backButton = new JButton("Back");
         panel.add(backButton, gbc);
+        //Styling
+        backButton.setBackground(Color.decode("#2c52b3")); // Warna biru
+        backButton.setForeground(Color.white);
 
         gbc.gridx = 1;
         JButton addButton = new JButton("Add");
         panel.add(addButton, gbc);
-
+        //Styling
+        addButton.setBackground(Color.decode("#79AC78")); // Warna hijau
+        addButton.setForeground(Color.white);
+        
         addButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 String nama = namaText.getText().trim();
@@ -834,6 +1035,10 @@ public class SwingUI {
         }
 
         JButton backButton = new JButton("Back");
+        //Styling
+        backButton.setBackground(Color.decode("#2c52b3")); // Warna biru
+        backButton.setForeground(Color.white);
+
         backButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 showLoggedInHomePage();
@@ -886,6 +1091,9 @@ public class SwingUI {
         }
 
         JButton backButton = new JButton("Back");
+        //Styling
+        backButton.setBackground(Color.decode("#2c52b3")); // Warna biru
+        backButton.setForeground(Color.white);
         backButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 showLoggedInHomePage();
@@ -938,6 +1146,10 @@ public class SwingUI {
         }
 
         JButton backButton = new JButton("Back");
+        //Styling
+        backButton.setBackground(Color.decode("#2c52b3")); // Warna biru
+        backButton.setForeground(Color.white);
+
         backButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 showLoggedInHomePage();
@@ -956,8 +1168,47 @@ public class SwingUI {
         gbc.insets = new Insets(5, 5, 5, 5);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
+        // Display all kandang data
+        String[] columnNames = {"ID", "Ukuran", "Tipe", "Spesialitas"};
+        Object[][] data = kandang.getKandangData(); // Use Kandang instance to get kandang data
+
+        if (data.length == 0) {
+            JLabel noDataLabel = new JLabel("No Kandang data available.");
+            noDataLabel.setHorizontalAlignment(SwingConstants.CENTER);
+            panel.add(noDataLabel, gbc);
+        } else {
+            DefaultTableModel model = new DefaultTableModel(data, columnNames) {
+                @Override
+                public boolean isCellEditable(int row, int column) {
+                    return false; // Make table cells non-editable
+                }
+            };
+
+            JTable table = new JTable(model);
+            table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+            table.setFillsViewportHeight(true);
+            table.setRowHeight(30);
+            table.setFont(new Font("Arial", Font.PLAIN, 14));
+            table.getTableHeader().setFont(new Font("Arial", Font.BOLD, 16));
+            table.getTableHeader().setBackground(Color.LIGHT_GRAY);
+            table.setGridColor(Color.GRAY);
+
+            DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+            centerRenderer.setHorizontalAlignment(JLabel.CENTER);
+            for (int i = 0; i < table.getColumnCount(); i++) {
+                table.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
+            }
+
+            JScrollPane scrollPane = new JScrollPane(table);
+            gbc.gridx = 0;
+            gbc.gridy = 0;
+            gbc.gridwidth = 2;
+            panel.add(scrollPane, gbc);
+            gbc.gridwidth = 1;
+        }
+
         gbc.gridx = 0;
-        gbc.gridy = 0;
+        gbc.gridy = 1;
         JLabel idLabel = new JLabel("Kandang ID");
         panel.add(idLabel, gbc);
 
@@ -966,13 +1217,19 @@ public class SwingUI {
         panel.add(idText, gbc);
 
         gbc.gridx = 0;
-        gbc.gridy = 1;
+        gbc.gridy = 2;
         JButton backButton = new JButton("Back");
         panel.add(backButton, gbc);
+        //Styling
+        backButton.setBackground(Color.decode("#2c52b3")); // Warna biru
+        backButton.setForeground(Color.white);
 
         gbc.gridx = 1;
         JButton deleteButton = new JButton("Delete");
         panel.add(deleteButton, gbc);
+        //Styling
+        deleteButton.setBackground(Color.decode("#FF0000")); // Warna merah
+        deleteButton.setForeground(Color.white);
 
         deleteButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -1005,8 +1262,47 @@ public class SwingUI {
         gbc.insets = new Insets(5, 5, 5, 5);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
+        // Display all hewan data
+        String[] columnNames = {"ID", "Nama", "Umur", "Jumlah", "Berat"};
+        Object[][] data = hewan.getHewanData(); // Use Hewan instance to get hewan data
+
+        if (data.length == 0) {
+            JLabel noDataLabel = new JLabel("No Hewan data available.");
+            noDataLabel.setHorizontalAlignment(SwingConstants.CENTER);
+            panel.add(noDataLabel, gbc);
+        } else {
+            DefaultTableModel model = new DefaultTableModel(data, columnNames) {
+                @Override
+                public boolean isCellEditable(int row, int column) {
+                    return false; // Make table cells non-editable
+                }
+            };
+
+            JTable table = new JTable(model);
+            table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+            table.setFillsViewportHeight(true);
+            table.setRowHeight(30);
+            table.setFont(new Font("Arial", Font.PLAIN, 14));
+            table.getTableHeader().setFont(new Font("Arial", Font.BOLD, 16));
+            table.getTableHeader().setBackground(Color.LIGHT_GRAY);
+            table.setGridColor(Color.GRAY);
+
+            DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+            centerRenderer.setHorizontalAlignment(JLabel.CENTER);
+            for (int i = 0; i < table.getColumnCount(); i++) {
+                table.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
+            }
+
+            JScrollPane scrollPane = new JScrollPane(table);
+            gbc.gridx = 0;
+            gbc.gridy = 0;
+            gbc.gridwidth = 2;
+            panel.add(scrollPane, gbc);
+            gbc.gridwidth = 1;
+        }
+
         gbc.gridx = 0;
-        gbc.gridy = 0;
+        gbc.gridy = 1;
         JLabel idLabel = new JLabel("Hewan ID");
         panel.add(idLabel, gbc);
 
@@ -1015,13 +1311,19 @@ public class SwingUI {
         panel.add(idText, gbc);
 
         gbc.gridx = 0;
-        gbc.gridy = 1;
+        gbc.gridy = 2;
         JButton backButton = new JButton("Back");
         panel.add(backButton, gbc);
+        //Styling
+        backButton.setBackground(Color.decode("#2c52b3")); // Warna biru
+        backButton.setForeground(Color.white);
 
         gbc.gridx = 1;
         JButton deleteButton = new JButton("Delete");
         panel.add(deleteButton, gbc);
+        //Styling
+        deleteButton.setBackground(Color.decode("#FF0000")); // Warna merah
+        deleteButton.setForeground(Color.white);
 
         deleteButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -1079,10 +1381,16 @@ public class SwingUI {
         gbc.gridy = 2;
         JButton backButton = new JButton("Back");
         panel.add(backButton, gbc);
+        //Styling
+        backButton.setBackground(Color.decode("#2c52b3")); // Warna biru
+        backButton.setForeground(Color.white);
 
         gbc.gridx = 1;
         JButton submitButton = new JButton("Submit");
         panel.add(submitButton, gbc);
+        //Styling
+        submitButton.setBackground(Color.decode("#79AC78")); // Warna hijau
+        submitButton.setForeground(Color.white);
 
         submitButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -1162,6 +1470,9 @@ public class SwingUI {
         }
 
         JButton backButton = new JButton("Back");
+        //Styling
+        backButton.setBackground(Color.decode("#2c52b3")); // Warna biru
+        backButton.setForeground(Color.white);
         backButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 showLoggedInHomePage();
@@ -1229,11 +1540,17 @@ public class SwingUI {
         gbc.gridy = 5;
         JButton backButton = new JButton("Back");
         panel.add(backButton, gbc);
+        //Styling
+        backButton.setBackground(Color.decode("#2c52b3")); // Warna biru
+        backButton.setForeground(Color.white);
 
         gbc.gridx = 1;
         JButton addButton = new JButton("Add");
         panel.add(addButton, gbc);
-
+        //Styling
+        addButton.setBackground(Color.decode("#79AC78")); // Warna hijau
+        addButton.setForeground(Color.white);
+        
         addButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 String kategori = kategoriText.getText().trim();
@@ -1274,8 +1591,55 @@ public class SwingUI {
         gbc.insets = new Insets(5, 5, 5, 5);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
+        // Display all stock data
+        String[] columnNames = {"ID", "Kategori", "Nama Stok", "Jumlah", "Satuan", "Gudang"};
+        ArrayList<Object[]> stokDataList = new ArrayList<>();
+        if (ems.isAdmin()) {
+            manager.cekStok(stokDataList);
+        } else {
+            ranger.cekStok(stokDataList);
+        }
+        Object[][] data = stokDataList.toArray(new Object[0][]);
+
+        if (data.length == 0) {
+            JLabel noDataLabel = new JLabel("No Stok data available.");
+            noDataLabel.setHorizontalAlignment(SwingConstants.CENTER);
+            panel.add(noDataLabel, gbc);
+        } else {
+            DefaultTableModel model = new DefaultTableModel(data, columnNames) {
+                @Override
+                public boolean isCellEditable(int row, int column) {
+                    return false; // Make table cells non-editable
+                }
+            };
+
+            JTable table = new JTable(model);
+            table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+            table.setFillsViewportHeight(true);
+            table.setRowHeight(30);
+            table.setFont(new Font("Arial", Font.PLAIN, 14));
+            table.getTableHeader().setFont(new Font("Arial", Font.BOLD, 16));
+            table.getTableHeader().setBackground(Color.LIGHT_GRAY);
+            table.setGridColor(Color.GRAY);
+
+            DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+            centerRenderer.setHorizontalAlignment(JLabel.CENTER);
+            for (int i = 0; i < table.getColumnCount(); i++) {
+                table.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
+            }
+
+            JScrollPane scrollPane = new JScrollPane(table);
+            scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+            scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+            gbc.gridx = 0;
+            gbc.gridy = 0;
+            gbc.gridwidth = 2;
+            panel.add(scrollPane, gbc);
+            gbc.gridwidth = 1;
+        }
+
         gbc.gridx = 0;
-        gbc.gridy = 0;
+        gbc.gridy = 1;
         JLabel idLabel = new JLabel("ID Stok");
         panel.add(idLabel, gbc);
 
@@ -1284,45 +1648,116 @@ public class SwingUI {
         panel.add(idText, gbc);
 
         gbc.gridx = 0;
-        gbc.gridy = 1;
-        JLabel jumlahLabel = new JLabel("Jumlah");
-        panel.add(jumlahLabel, gbc);
-
-        gbc.gridx = 1;
-        JTextField jumlahText = new JTextField(20);
-        panel.add(jumlahText, gbc);
-
-        gbc.gridx = 0;
         gbc.gridy = 2;
         JButton backButton = new JButton("Back");
         panel.add(backButton, gbc);
+        //Styling
+        backButton.setBackground(Color.decode("#2c52b3")); // Warna biru
+        backButton.setForeground(Color.white);
 
         gbc.gridx = 1;
-        JButton updateButton = new JButton("Update");
-        panel.add(updateButton, gbc);
+        JButton loadButton = new JButton("Load Data");
+        panel.add(loadButton, gbc);
+        //Styling
+        loadButton.setBackground(Color.decode("#79AC78")); // Warna hijau
+        loadButton.setForeground(Color.white);
 
-        updateButton.addActionListener(new ActionListener() {
+        loadButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                String id = idText.getText().trim();
-                String jumlah = jumlahText.getText().trim();
-
-                if (id.isEmpty() || jumlah.isEmpty()) {
-                    JOptionPane.showMessageDialog(panel, "Belum Terisi", "Error", JOptionPane.ERROR_MESSAGE);
+                String idStr = idText.getText().trim();
+                if (idStr.isEmpty()) {
+                    JOptionPane.showMessageDialog(panel, "ID Stok tidak boleh kosong.", "Error", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
 
-                boolean updated;
-                if (ems.isAdmin()) {
-                    updated = manager.updateStok(Integer.parseInt(id), Integer.parseInt(jumlah));
-                } else {
-                    updated = ranger.updateStok(Integer.parseInt(id), Integer.parseInt(jumlah));
+                int id = Integer.parseInt(idStr);
+                Stok stokData = manager.getStokById(id); // Use Manager instance to get stock data by ID
+
+                if (stokData == null) {
+                    JOptionPane.showMessageDialog(panel, "ID Stok tidak ditemukan.", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
                 }
-                if (updated) {
-                    JOptionPane.showMessageDialog(panel, "Stok berhasil diperbarui!");
-                } else {
-                    JOptionPane.showMessageDialog(panel, "Stok tidak ditemukan!");
-                }
-                showCekStokPage(); // Refresh the stock page
+
+                // Display the data for editing
+                gbc.gridx = 0;
+                gbc.gridy = 3;
+                JLabel kategoriLabel = new JLabel("Kategori");
+                panel.add(kategoriLabel, gbc);
+
+                gbc.gridx = 1;
+                JTextField kategoriText = new JTextField(20);
+                kategoriText.setText(stokData.getKategoriStok());
+                panel.add(kategoriText, gbc);
+
+                gbc.gridx = 0;
+                gbc.gridy = 4;
+                JLabel namaLabel = new JLabel("Nama Stok");
+                panel.add(namaLabel, gbc);
+
+                gbc.gridx = 1;
+                JTextField namaText = new JTextField(20);
+                namaText.setText(stokData.getNamaStok());
+                panel.add(namaText, gbc);
+
+                gbc.gridx = 0;
+                gbc.gridy = 5;
+                JLabel jumlahLabel = new JLabel("Jumlah");
+                panel.add(jumlahLabel, gbc);
+
+                gbc.gridx = 1;
+                JTextField jumlahText = new JTextField(20);
+                jumlahText.setText(String.valueOf(stokData.getJumlah()));
+                panel.add(jumlahText, gbc);
+
+                gbc.gridx = 0;
+                gbc.gridy = 6;
+                JLabel satuanLabel = new JLabel("Satuan");
+                panel.add(satuanLabel, gbc);
+
+                gbc.gridx = 1;
+                JTextField satuanText = new JTextField(20);
+                satuanText.setText(stokData.getSatuan());
+                panel.add(satuanText, gbc);
+
+                gbc.gridx = 0;
+                gbc.gridy = 7;
+                JLabel gudangLabel = new JLabel("Gudang");
+                panel.add(gudangLabel, gbc);
+
+                gbc.gridx = 1;
+                JTextField gudangText = new JTextField(20);
+                gudangText.setText(stokData.getNamaGudang());
+                panel.add(gudangText, gbc);
+
+                gbc.gridx = 0;
+                gbc.gridy = 8;
+                JButton editButton = new JButton("Edit");
+                panel.add(editButton, gbc);
+                //Styling
+                editButton.setBackground(Color.decode("#79AC78")); // Warna hijau
+                editButton.setForeground(Color.white);
+
+                editButton.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        String kategori = kategoriText.getText().trim();
+                        String nama = namaText.getText().trim();
+                        String jumlah = jumlahText.getText().trim();
+                        String satuan = satuanText.getText().trim();
+                        String gudang = gudangText.getText().trim();
+
+                        if (kategori.isEmpty() || nama.isEmpty() || jumlah.isEmpty() || satuan.isEmpty() || gudang.isEmpty()) {
+                            JOptionPane.showMessageDialog(panel, "Belum Terisi", "Error", JOptionPane.ERROR_MESSAGE);
+                            return;
+                        }
+
+                        manager.updateStok(id, kategori, nama, Integer.parseInt(jumlah), satuan, gudang); // Use Manager instance to update stock
+                        JOptionPane.showMessageDialog(panel, "Stok updated successfully!");
+                        showCekStokPage();
+                    }
+                });
+
+                panel.revalidate();
+                panel.repaint();
             }
         });
 
@@ -1343,8 +1778,53 @@ public class SwingUI {
         gbc.insets = new Insets(5, 5, 5, 5);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
+        // Display all stock data
+        String[] columnNames = {"ID", "Kategori", "Nama Stok", "Jumlah", "Satuan", "Gudang"};
+        ArrayList<Object[]> stokDataList = new ArrayList<>();
+        if (ems.isAdmin()) {
+            manager.cekStok(stokDataList);
+        } else {
+            ranger.cekStok(stokDataList);
+        }
+        Object[][] data = stokDataList.toArray(new Object[0][]);
+
+        if (data.length == 0) {
+            JLabel noDataLabel = new JLabel("No Stok data available.");
+            noDataLabel.setHorizontalAlignment(SwingConstants.CENTER);
+            panel.add(noDataLabel, gbc);
+        } else {
+            DefaultTableModel model = new DefaultTableModel(data, columnNames) {
+                @Override
+                public boolean isCellEditable(int row, int column) {
+                    return false; // Make table cells non-editable
+                }
+            };
+
+            JTable table = new JTable(model);
+            table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+            table.setFillsViewportHeight(true);
+            table.setRowHeight(30);
+            table.setFont(new Font("Arial", Font.PLAIN, 14));
+            table.getTableHeader().setFont(new Font("Arial", Font.BOLD, 16));
+            table.getTableHeader().setBackground(Color.LIGHT_GRAY);
+            table.setGridColor(Color.GRAY);
+
+            DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+            centerRenderer.setHorizontalAlignment(JLabel.CENTER);
+            for (int i = 0; i < table.getColumnCount(); i++) {
+                table.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
+            }
+
+            JScrollPane scrollPane = new JScrollPane(table);
+            gbc.gridx = 0;
+            gbc.gridy = 0;
+            gbc.gridwidth = 2;
+            panel.add(scrollPane, gbc);
+            gbc.gridwidth = 1;
+        }
+
         gbc.gridx = 0;
-        gbc.gridy = 0;
+        gbc.gridy = 1;
         JLabel idLabel = new JLabel("ID Stok");
         panel.add(idLabel, gbc);
 
@@ -1353,13 +1833,19 @@ public class SwingUI {
         panel.add(idText, gbc);
 
         gbc.gridx = 0;
-        gbc.gridy = 1;
+        gbc.gridy = 2;
         JButton backButton = new JButton("Back");
         panel.add(backButton, gbc);
+        //Styling
+        backButton.setBackground(Color.decode("#2c52b3")); // Warna biru
+        backButton.setForeground(Color.white);
 
         gbc.gridx = 1;
         JButton deleteButton = new JButton("Delete");
         panel.add(deleteButton, gbc);
+        //Styling
+        deleteButton.setBackground(Color.decode("#FF0000")); // Warna merah
+        deleteButton.setForeground(Color.white);
 
         deleteButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -1436,12 +1922,504 @@ public class SwingUI {
         panel.add(scrollPane, BorderLayout.CENTER);
 
         JButton backButton = new JButton("Back");
+        //Styling
+        backButton.setBackground(Color.decode("#2c52b3")); // Warna biru
+        backButton.setForeground(Color.white);
+
         backButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 showLoggedInHomePage();
             }
         });
         panel.add(backButton, BorderLayout.SOUTH);
+
+        panel.revalidate();
+        panel.repaint();
+    }
+
+    private void showEditKandangPage() {
+        panel.removeAll();
+        panel.setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+
+        // Display all kandang data
+        String[] columnNames = {"ID", "Ukuran", "Tipe", "Spesialitas"};
+        Object[][] data = kandang.getKandangData(); // Use Kandang instance to get kandang data
+
+        if (data.length == 0) {
+            JLabel noDataLabel = new JLabel("No Kandang data available.");
+            noDataLabel.setHorizontalAlignment(SwingConstants.CENTER);
+            panel.add(noDataLabel, gbc);
+        } else {
+            DefaultTableModel model = new DefaultTableModel(data, columnNames) {
+                @Override
+                public boolean isCellEditable(int row, int column) {
+                    return false; // Make table cells non-editable
+                }
+            };
+
+            JTable table = new JTable(model);
+            table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+            table.setFillsViewportHeight(true);
+            table.setRowHeight(30);
+            table.setFont(new Font("Arial", Font.PLAIN, 14));
+            table.getTableHeader().setFont(new Font("Arial", Font.BOLD, 16));
+            table.getTableHeader().setBackground(Color.LIGHT_GRAY);
+            table.setGridColor(Color.GRAY);
+
+            DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+            centerRenderer.setHorizontalAlignment(JLabel.CENTER);
+            for (int i = 0; i < table.getColumnCount(); i++) {
+                table.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
+            }
+
+            JScrollPane scrollPane = new JScrollPane(table);
+            scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+            scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+            gbc.gridx = 0;
+            gbc.gridy = 0;
+            gbc.gridwidth = 2;
+            panel.add(scrollPane, gbc);
+            gbc.gridwidth = 1;
+        }
+
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        JLabel idLabel = new JLabel("Kandang ID");
+        panel.add(idLabel, gbc);
+
+        gbc.gridx = 1;
+        JTextField idText = new JTextField(20);
+        panel.add(idText, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        JButton backButton = new JButton("Back");
+        panel.add(backButton, gbc);
+        //Styling
+        backButton.setBackground(Color.decode("#2c52b3")); // Warna biru
+        backButton.setForeground(Color.white);
+
+        gbc.gridx = 1;
+        JButton loadButton = new JButton("Load Data");
+        panel.add(loadButton, gbc);
+        //Styling
+        loadButton.setBackground(Color.decode("#79AC78")); // Warna hijau
+        loadButton.setForeground(Color.white);
+
+        loadButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                String idStr = idText.getText().trim();
+                if (idStr.isEmpty()) {
+                    JOptionPane.showMessageDialog(panel, "Kandang ID tidak boleh kosong.", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                int id = Integer.parseInt(idStr);
+                Object[] kandangData = kandang.getKandangById(id); // Use Kandang instance to get kandang data by ID
+
+                if (kandangData == null) {
+                    JOptionPane.showMessageDialog(panel, "Kandang ID tidak ditemukan.", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                // Display the data for editing
+                gbc.gridx = 0;
+                gbc.gridy = 3;
+                JLabel ukuranLabel = new JLabel("Ukuran");
+                panel.add(ukuranLabel, gbc);
+
+                gbc.gridx = 1;
+                JTextField ukuranText = new JTextField(20);
+                ukuranText.setText(String.valueOf(kandangData[1]));
+                panel.add(ukuranText, gbc);
+
+                gbc.gridx = 0;
+                gbc.gridy = 4;
+                JLabel tipeLabel = new JLabel("Tipe");
+                panel.add(tipeLabel, gbc);
+
+                gbc.gridx = 1;
+                JTextField tipeText = new JTextField(20);
+                tipeText.setText(String.valueOf(kandangData[2]));
+                panel.add(tipeText, gbc);
+
+                gbc.gridx = 0;
+                gbc.gridy = 5;
+                JLabel spesialitasLabel = new JLabel("Spesialitas");
+                panel.add(spesialitasLabel, gbc);
+
+                gbc.gridx = 1;
+                JTextField spesialitasText = new JTextField(20);
+                spesialitasText.setText(String.valueOf(kandangData[3]));
+                panel.add(spesialitasText, gbc);
+
+                gbc.gridx = 0;
+                gbc.gridy = 6;
+                JButton editButton = new JButton("Edit");
+                panel.add(editButton, gbc);
+                //Styling
+                editButton.setBackground(Color.decode("#79AC78")); // Warna hijau
+                editButton.setForeground(Color.white);
+
+                editButton.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        String ukuran = ukuranText.getText().trim();
+                        String tipe = tipeText.getText().trim();
+                        String spesialitas = spesialitasText.getText().trim();
+
+                        if (ukuran.isEmpty() || tipe.isEmpty() || spesialitas.isEmpty()) {
+                            JOptionPane.showMessageDialog(panel, "Belum Terisi", "Error", JOptionPane.ERROR_MESSAGE);
+                            return;
+                        }
+
+                        kandang.editKandang(id, ukuran, tipe, spesialitas); // Use Kandang instance to edit kandang
+                        JOptionPane.showMessageDialog(panel, "Kandang edited successfully!");
+                        showLoggedInHomePage();
+                    }
+                });
+
+                panel.revalidate();
+                panel.repaint();
+            }
+        });
+
+        backButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                showLoggedInHomePage();
+            }
+        });
+
+        panel.revalidate();
+        panel.repaint();
+    }
+
+    private void showEditHewanPage() {
+        panel.removeAll();
+        panel.setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+
+        // Display all hewan data
+        String[] columnNames = {"ID", "Nama", "Umur", "Jumlah", "Berat"};
+        Object[][] data = hewan.getHewanData(); // Use Hewan instance to get hewan data
+
+        if (data.length == 0) {
+            JLabel noDataLabel = new JLabel("No Hewan data available.");
+            noDataLabel.setHorizontalAlignment(SwingConstants.CENTER);
+            panel.add(noDataLabel, gbc);
+        } else {
+            DefaultTableModel model = new DefaultTableModel(data, columnNames) {
+                @Override
+                public boolean isCellEditable(int row, int column) {
+                    return false; // Make table cells non-editable
+                }
+            };
+
+            JTable table = new JTable(model);
+            table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+            table.setFillsViewportHeight(true);
+            table.setRowHeight(30);
+            table.setFont(new Font("Arial", Font.PLAIN, 14));
+            table.getTableHeader().setFont(new Font("Arial", Font.BOLD, 16));
+            table.getTableHeader().setBackground(Color.LIGHT_GRAY);
+            table.setGridColor(Color.GRAY);
+
+            DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+            centerRenderer.setHorizontalAlignment(JLabel.CENTER);
+            for (int i = 0; i < table.getColumnCount(); i++) {
+                table.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
+            }
+
+            JScrollPane scrollPane = new JScrollPane(table);
+            scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+            scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+            gbc.gridx = 0;
+            gbc.gridy = 0;
+            gbc.gridwidth = 2;
+            panel.add(scrollPane, gbc);
+            gbc.gridwidth = 1;
+        }
+
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        JLabel idLabel = new JLabel("Hewan ID");
+        panel.add(idLabel, gbc);
+
+        gbc.gridx = 1;
+        JTextField idText = new JTextField(20);
+        panel.add(idText, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        JButton backButton = new JButton("Back");
+        panel.add(backButton, gbc);
+        //Styling
+        backButton.setBackground(Color.decode("#2c52b3")); // Warna biru
+        backButton.setForeground(Color.white);
+
+        gbc.gridx = 1;
+        JButton loadButton = new JButton("Load Data");
+        panel.add(loadButton, gbc);
+        //Styling
+        loadButton.setBackground(Color.decode("#79AC78")); // Warna hijau
+        loadButton.setForeground(Color.white);
+
+        loadButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                String idStr = idText.getText().trim();
+                if (idStr.isEmpty()) {
+                    JOptionPane.showMessageDialog(panel, "Hewan ID tidak boleh kosong.", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                int id = Integer.parseInt(idStr);
+                Object[] hewanData = hewan.getHewanById(id); // Use Hewan instance to get hewan data by ID
+
+                if (hewanData == null) {
+                    JOptionPane.showMessageDialog(panel, "Hewan ID tidak ditemukan.", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                // Display the data for editing
+                gbc.gridx = 0;
+                gbc.gridy = 3;
+                JLabel umurLabel = new JLabel("Umur");
+                panel.add(umurLabel, gbc);
+
+                gbc.gridx = 1;
+                JTextField umurText = new JTextField(20);
+                umurText.setText(String.valueOf(hewanData[2]));
+                panel.add(umurText, gbc);
+
+                gbc.gridx = 0;
+                gbc.gridy = 4;
+                JLabel jumlahLabel = new JLabel("Jumlah");
+                panel.add(jumlahLabel, gbc);
+
+                gbc.gridx = 1;
+                JTextField jumlahText = new JTextField(20);
+                jumlahText.setText(String.valueOf(hewanData[3]));
+                panel.add(jumlahText, gbc);
+
+                gbc.gridx = 0;
+                gbc.gridy = 5;
+                JLabel beratLabel = new JLabel("Berat");
+                panel.add(beratLabel, gbc);
+
+                gbc.gridx = 1;
+                JTextField beratText = new JTextField(20);
+                beratText.setText(String.valueOf(hewanData[4]));
+                panel.add(beratText, gbc);
+
+                gbc.gridx = 0;
+                gbc.gridy = 6;
+                JButton editButton = new JButton("Edit");
+                panel.add(editButton, gbc);
+                //Styling
+                editButton.setBackground(Color.decode("#79AC78")); // Warna hijau
+                editButton.setForeground(Color.white);
+
+                editButton.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        String umur = umurText.getText().trim();
+                        String jumlah = jumlahText.getText().trim();
+                        String berat = beratText.getText().trim();
+
+                        if (umur.isEmpty() || jumlah.isEmpty() || berat.isEmpty()) {
+                            JOptionPane.showMessageDialog(panel, "Belum Terisi", "Error", JOptionPane.ERROR_MESSAGE);
+                            return;
+                        }
+
+                        hewan.editHewan(id, Integer.parseInt(umur), Integer.parseInt(jumlah), Double.parseDouble(berat)); // Use Hewan instance to edit hewan
+                        JOptionPane.showMessageDialog(panel, "Hewan edited successfully!");
+                        showLoggedInHomePage();
+                    }
+                });
+
+                panel.revalidate();
+                panel.repaint();
+            }
+        });
+
+        backButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                showLoggedInHomePage();
+            }
+        });
+
+        panel.revalidate();
+        panel.repaint();
+    }
+
+    private void showEditEmployeePage() {
+        panel.removeAll();
+        panel.setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+
+        // Display all employee data
+        String[] columnNames = {"ID", "Name", "Age", "Address", "Phone"};
+        Object[][] data = manager.getEmployeeData(); // Use Manager instance to get employee data
+
+        if (data.length == 0) {
+            JLabel noDataLabel = new JLabel("No Employee data available.");
+            noDataLabel.setHorizontalAlignment(SwingConstants.CENTER);
+            panel.add(noDataLabel, gbc);
+        } else {
+            DefaultTableModel model = new DefaultTableModel(data, columnNames) {
+                @Override
+                public boolean isCellEditable(int row, int column) {
+                    return false; // Make table cells non-editable
+                }
+            };
+
+            JTable table = new JTable(model);
+            table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+            table.setFillsViewportHeight(true);
+            table.setRowHeight(30);
+            table.setFont(new Font("Arial", Font.PLAIN, 14));
+            table.getTableHeader().setFont(new Font("Arial", Font.BOLD, 16));
+            table.getTableHeader().setBackground(Color.LIGHT_GRAY);
+            table.setGridColor(Color.GRAY);
+
+            DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+            centerRenderer.setHorizontalAlignment(JLabel.CENTER);
+            for (int i = 0; i < table.getColumnCount(); i++) {
+                table.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
+            }
+
+            JScrollPane scrollPane = new JScrollPane(table);
+            scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+            scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+            gbc.gridx = 0;
+            gbc.gridy = 0;
+            gbc.gridwidth = 2;
+            panel.add(scrollPane, gbc);
+            gbc.gridwidth = 1;
+        }
+
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        JLabel idLabel = new JLabel("Employee ID");
+        panel.add(idLabel, gbc);
+
+        gbc.gridx = 1;
+        JTextField idText = new JTextField(20);
+        panel.add(idText, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        JButton backButton = new JButton("Back");
+        panel.add(backButton, gbc);
+        //Styling
+        backButton.setBackground(Color.decode("#2c52b3")); // Warna biru
+        backButton.setForeground(Color.white);
+
+        gbc.gridx = 1;
+        JButton loadButton = new JButton("Load Data");
+        panel.add(loadButton, gbc);
+        //Styling
+        loadButton.setBackground(Color.decode("#79AC78")); // Warna hijau
+        loadButton.setForeground(Color.white);
+
+        loadButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                String idStr = idText.getText().trim();
+                if (idStr.isEmpty()) {
+                    JOptionPane.showMessageDialog(panel, "Employee ID tidak boleh kosong.", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                int id = Integer.parseInt(idStr);
+                Employee employeeData = manager.getEmployeeById(id); // Use Manager instance to get employee data by ID
+
+                if (employeeData == null) {
+                    JOptionPane.showMessageDialog(panel, "Employee ID tidak ditemukan.", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                // Display the data for editing
+                gbc.gridx = 0;
+                gbc.gridy = 3;
+                JLabel nameLabel = new JLabel("Name");
+                panel.add(nameLabel, gbc);
+
+                gbc.gridx = 1;
+                JTextField nameText = new JTextField(20);
+                nameText.setText(employeeData.getNama());
+                panel.add(nameText, gbc);
+
+                gbc.gridx = 0;
+                gbc.gridy = 4;
+                JLabel ageLabel = new JLabel("Age");
+                panel.add(ageLabel, gbc);
+
+                gbc.gridx = 1;
+                JTextField ageText = new JTextField(20);
+                ageText.setText(String.valueOf(employeeData.getUsia()));
+                panel.add(ageText, gbc);
+
+                gbc.gridx = 0;
+                gbc.gridy = 5;
+                JLabel addressLabel = new JLabel("Address");
+                panel.add(addressLabel, gbc);
+
+                gbc.gridx = 1;
+                JTextField addressText = new JTextField(20);
+                addressText.setText(employeeData.getAlamat());
+                panel.add(addressText, gbc);
+
+                gbc.gridx = 0;
+                gbc.gridy = 6;
+                JLabel phoneLabel = new JLabel("Phone");
+                panel.add(phoneLabel, gbc);
+
+                gbc.gridx = 1;
+                JTextField phoneText = new JTextField(20);
+                phoneText.setText(employeeData.getNoTelp());
+                panel.add(phoneText, gbc);
+
+                gbc.gridx = 0;
+                gbc.gridy = 7;
+                JButton editButton = new JButton("Edit");
+                panel.add(editButton, gbc);
+                //Styling
+                editButton.setBackground(Color.decode("#79AC78")); // Warna hijau
+                editButton.setForeground(Color.white);
+
+                editButton.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        String name = nameText.getText().trim();
+                        String age = ageText.getText().trim();
+                        String address = addressText.getText().trim();
+                        String phone = phoneText.getText().trim();
+
+                        if (name.isEmpty() || age.isEmpty() || address.isEmpty() || phone.isEmpty()) {
+                            JOptionPane.showMessageDialog(panel, "Belum Terisi", "Error", JOptionPane.ERROR_MESSAGE);
+                            return;
+                        }
+
+                        manager.editEmployee(id, name, Integer.parseInt(age), address, phone); // Use Manager instance to edit employee
+                        JOptionPane.showMessageDialog(panel, "Employee edited successfully!");
+                        showLoggedInHomePage();
+                    }
+                });
+
+                panel.revalidate();
+                panel.repaint();
+            }
+        });
+
+        backButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                showLoggedInHomePage();
+            }
+        });
 
         panel.revalidate();
         panel.repaint();
