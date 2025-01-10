@@ -20,11 +20,13 @@ import java.util.Random;
 public class Manager {
     private ArrayList<Employee> employees;
     private Gudang gudang;
+    private Employee currentUser;
 
-    public Manager() {
+    public Manager(Employee currentUser) {
+        this.currentUser = currentUser;
         employees = new ArrayList<>();
         loadEmployeesFromDatabase();
-        this.gudang = new Gudang(); // Initialize Gudang
+        this.gudang = new Gudang(currentUser); // Initialize Gudang with currentUser
     }
 
     private void loadEmployeesFromDatabase() {
@@ -84,35 +86,89 @@ public class Manager {
             stmt.setString(4, employee.getNoTelp());
             stmt.executeUpdate();
             loadEmployeesFromDatabase(); // Refresh the list from the database
+            logDataProcessingChange(currentUser.getNama(), "Added employee: " + employee.getNama());
         } catch (SQLException e) {
             System.out.println("Error adding employee to database: " + e.getMessage());
             e.printStackTrace();
         }
     }
 
-    public void removeEmployee(int idEmployee) {
+    public boolean removeEmployee(int idEmployee) {
         try (Connection conn = FaunaFlowGG.getConnection()) {
-            String sql = "DELETE FROM employee WHERE id = ?"; // Correct table name: employee
-            PreparedStatement stmt = conn.prepareStatement(sql);
-            stmt.setInt(1, idEmployee);
-            stmt.executeUpdate();
-            loadEmployeesFromDatabase(); // Refresh the list from the database
+            // Check if the employee exists
+            String checkSql = "SELECT id FROM employee WHERE id = ?";
+            PreparedStatement checkStmt = conn.prepareStatement(checkSql);
+            checkStmt.setInt(1, idEmployee);
+            ResultSet rs = checkStmt.executeQuery();
+            if (!rs.next()) {
+                return false; // Employee not found
+            }
+
+            // Start a transaction
+            conn.setAutoCommit(false);
+
+            // Remove the employee
+            String sqlEmployee = "DELETE FROM employee WHERE id = ?";
+            PreparedStatement stmtEmployee = conn.prepareStatement(sqlEmployee);
+            stmtEmployee.setInt(1, idEmployee);
+            int rowsAffectedEmployee = stmtEmployee.executeUpdate();
+
+            // Remove the associated account
+            String sqlAccount = "DELETE FROM account WHERE employee_id = ?";
+            PreparedStatement stmtAccount = conn.prepareStatement(sqlAccount);
+            stmtAccount.setInt(1, idEmployee);
+            int rowsAffectedAccount = stmtAccount.executeUpdate();
+
+            if (rowsAffectedEmployee > 0) {
+                conn.commit(); // Commit the transaction
+                logDataProcessingChange(currentUser.getNama(), "Removed employee with ID: " + idEmployee + " and associated account");
+                return true; // Success
+            } else {
+                conn.rollback(); // Rollback the transaction
+                return false; // Failed to remove employee
+            }
         } catch (SQLException e) {
-            System.out.println("Error removing employee from database: " + e.getMessage());
+            System.out.println("Error removing employee and associated account from database: " + e.getMessage());
             e.printStackTrace();
+            return false; // Error occurred
         }
     }
 
-    public void setHewanToKandang(int idKandang, int idHewan) {
+    public void setHewanToKandang(int idKandang, int idHewan) throws Exception {
         try (Connection conn = FaunaFlowGG.getConnection()) {
-            // Update kandang table
-            String sqlKandang = "UPDATE kandang SET idHewan = ? WHERE id = ?";
-            PreparedStatement stmtKandang = conn.prepareStatement(sqlKandang);
-            stmtKandang.setInt(1, idHewan);
-            stmtKandang.setInt(2, idKandang);
-            stmtKandang.executeUpdate();
+            // Check if the kandang exists
+            String checkKandangSql = "SELECT id FROM kandang WHERE id = ?";
+            PreparedStatement checkKandangStmt = conn.prepareStatement(checkKandangSql);
+            checkKandangStmt.setInt(1, idKandang);
+            ResultSet rsKandang = checkKandangStmt.executeQuery();
+            if (!rsKandang.next()) {
+                throw new Exception("Kandang with ID: " + idKandang + " does not exist.");
+            }
 
-            // Update hewan table
+            // Check if the hewan exists
+            String checkHewanSql = "SELECT idHewan, idKandang FROM hewan WHERE idHewan = ?";
+            PreparedStatement checkHewanStmt = conn.prepareStatement(checkHewanSql);
+            checkHewanStmt.setInt(1, idHewan);
+            ResultSet rsHewan = checkHewanStmt.executeQuery();
+            if (!rsHewan.next()) {
+                throw new Exception("Hewan with ID: " + idHewan + " does not exist.");
+            }
+
+            // Check if the hewan is already set to a kandang
+            if (rsHewan.getInt("idKandang") != 0) {
+                throw new Exception("Hewan with ID: " + idHewan + " is already set to a kandang.");
+            }
+
+            // Check if the kandang already has a hewan
+            String checkKandangHewanSql = "SELECT idHewan FROM hewan WHERE idKandang = ?";
+            PreparedStatement checkKandangHewanStmt = conn.prepareStatement(checkKandangHewanSql);
+            checkKandangHewanStmt.setInt(1, idKandang);
+            ResultSet rsKandangHewan = checkKandangHewanStmt.executeQuery();
+            if (rsKandangHewan.next()) {
+                throw new Exception("Kandang with ID: " + idKandang + " already has a hewan.");
+            }
+
+            // Set the hewan to the kandang
             String sqlHewan = "UPDATE hewan SET idKandang = ? WHERE idHewan = ?";
             PreparedStatement stmtHewan = conn.prepareStatement(sqlHewan);
             stmtHewan.setInt(1, idKandang);
@@ -120,9 +176,13 @@ public class Manager {
             stmtHewan.executeUpdate();
 
             System.out.println("Hewan set to kandang successfully!");
+            if (currentUser != null) {
+                logDataProcessingChange(currentUser.getNama(), "Set hewan with ID: " + idHewan + " to kandang with ID: " + idKandang);
+            }
         } catch (SQLException e) {
             System.out.println("Error setting hewan to kandang: " + e.getMessage());
             e.printStackTrace();
+            throw new Exception("Error setting hewan to kandang: " + e.getMessage());
         }
     }
 
@@ -137,7 +197,7 @@ public class Manager {
                 deleteStmt.executeUpdate();
             }
 
-            String insertSQL = "INSERT INTO JobdeskKaryawan (nama_karyawan, senin, selasa, rabu, kamis, jumat, sabtu) VALUES (?, ?, ?, ?, ?, ?, ?)";
+            String insertSQL = "INSERT INTO JobdeskKaryawan (nama_karyawan, senin, selasa, rabu, kamis, jumat, sabtu, minggu) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
             List<Employee> employees = getEmployees();
 
             for (Employee employee : employees) {
@@ -146,17 +206,19 @@ public class Manager {
 
                 try (PreparedStatement pstmt = conn.prepareStatement(insertSQL)) {
                     pstmt.setString(1, employee.getNama());
-                    pstmt.setString(2, shuffledJobdesks.get(0)); // Senin
+                    pstmt.setString(2, shuffledJobdesks.get(0)); // Senikon
                     pstmt.setString(3, shuffledJobdesks.get(1)); // Selasa
                     pstmt.setString(4, shuffledJobdesks.get(2)); // Rabu
                     pstmt.setString(5, shuffledJobdesks.get(3)); // Kamis
                     pstmt.setString(6, shuffledJobdesks.get(0)); // Jumat
                     pstmt.setString(7, shuffledJobdesks.get(1)); // Sabtu
+                    pstmt.setString(8, shuffledJobdesks.get(2)); // Minggu
 
                     pstmt.executeUpdate();
                 }
             }
 
+            logDataProcessingChange(currentUser.getNama(), "Assigned random jobdesks");
             System.out.println("Jobdesk karyawan berhasil di-randomize dan disimpan ke database.");
 
         } catch (SQLException e) {
@@ -172,7 +234,7 @@ public class Manager {
             ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {
-                Object[] jobdesk = new Object[8];
+                Object[] jobdesk = new Object[9]; // Adjust the array size to 9
                 jobdesk[0] = rs.getInt("id");
                 jobdesk[1] = rs.getString("nama_karyawan");
                 jobdesk[2] = rs.getString("senin");
@@ -181,6 +243,7 @@ public class Manager {
                 jobdesk[5] = rs.getString("kamis");
                 jobdesk[6] = rs.getString("jumat");
                 jobdesk[7] = rs.getString("sabtu");
+                jobdesk[8] = rs.getString("minggu");
                 jobdeskList.add(jobdesk);
             }
         } catch (SQLException e) {
@@ -195,6 +258,7 @@ public class Manager {
             String sql = "DELETE FROM JobdeskKaryawan";
             PreparedStatement stmt = conn.prepareStatement(sql);
             stmt.executeUpdate();
+            logDataProcessingChange(currentUser.getNama(), "Deleted all JobdeskKaryawan data");
             System.out.println("All JobdeskKaryawan data deleted successfully!");
         } catch (SQLException e) {
             System.out.println("Error deleting all JobdeskKaryawan data: " + e.getMessage());
@@ -224,29 +288,45 @@ public class Manager {
         return reportList.toArray(new Object[0][0]);
     }
 
-    public void tambahStokMakanan(String namaStok, int jumlah) {
-        gudang.loadStokFromDatabase(); // Refresh the list from the database
-        gudang.tambahStok("Makanan", namaStok, jumlah, "kg", 1); // Adjust parameters as needed
+    public boolean deleteReport(int idReport) {
+        try (Connection conn = FaunaFlowGG.getConnection()) {
+            System.out.println("Attempting to delete report with ID: " + idReport); // Debugging statement
+            String sql = "DELETE FROM Laporan WHERE id = ?";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setInt(1, idReport);
+            int rowsAffected = stmt.executeUpdate();
+            if (rowsAffected > 0) {
+                logDataProcessingChange(currentUser.getNama(), "Deleted report with ID: " + idReport);
+                System.out.println("Report deleted successfully!");
+                return true;
+            } else {
+                System.out.println("Failed to delete report. Report ID not found.");
+                return false;
+            }
+        } catch (SQLException e) {
+            System.out.println("Error deleting report from database: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
     }
 
-    public boolean updateStokMakanan(String namaStok, int jumlah) {
-        gudang.loadStokFromDatabase(); // Refresh the list from the database
-        return gudang.updateStokByName("Makanan", namaStok, jumlah); // Ensure Gudang has this method
-    }
-
-    public void deleteStokMakanan(String namaStok) {
-        gudang.loadStokFromDatabase(); // Refresh the list from the database
-        gudang.deleteStokByName("Makanan", namaStok); // Ensure Gudang has this method
-    }
-
-    public void cekStok(ArrayList<Object[]> stokDataList) {
-        gudang.loadStokFromDatabase(); // Refresh the list from the database
-        gudang.cekStok(stokDataList);
+    public void deleteAllReports() {
+        try (Connection conn = FaunaFlowGG.getConnection()) {
+            String sql = "DELETE FROM Laporan";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.executeUpdate();
+            logDataProcessingChange(currentUser.getNama(), "Deleted all reports");
+            System.out.println("All reports deleted successfully!");
+        } catch (SQLException e) {
+            System.out.println("Error deleting all reports from database: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     public void tambahStok(String kategoriStok, String namaStok, int jumlah, String satuan, int idGudang) {
         gudang.loadStokFromDatabase(); // Refresh the list from the database
         gudang.tambahStok(kategoriStok, namaStok, jumlah, satuan, idGudang);
+        logDataProcessingChange(currentUser.getNama(), "Added stock: " + namaStok + " in category: " + kategoriStok);
     }
 
     public boolean updateStok(int idStok, int jumlah) {
@@ -254,14 +334,57 @@ public class Manager {
         boolean updated = gudang.updateStok(idStok, jumlah);
         if (updated) {
             gudang.loadStokFromDatabase(); // Refresh the list from the database
+            logDataProcessingChange(currentUser.getNama(), "Updated stock with ID: " + idStok);
         }
         return updated;
     }
 
-    public void deleteStok(int idStok) {
-        gudang.loadStokFromDatabase(); // Refresh the list from the database
-        gudang.deleteStok(idStok);
-        gudang.loadStokFromDatabase(); // Refresh the list from the database
+    public boolean updateStok(int idStok, String kategori, String nama, int jumlah, String satuan, String gudang) {
+        try (Connection conn = FaunaFlowGG.getConnection()) {
+            String sql = "UPDATE Stok SET kategoriStok = ?, namaStok = ?, jumlahStok = ?, Satuan = ?, idGudang = " +
+                         "(SELECT idGudang FROM Gudang WHERE namaGudang = ?) WHERE idStok = ?";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setString(1, kategori);
+            stmt.setString(2, nama);
+            stmt.setInt(3, jumlah);
+            stmt.setString(4, satuan);
+            stmt.setString(5, gudang);
+            stmt.setInt(6, idStok);
+            int rowsUpdated = stmt.executeUpdate();
+            if (rowsUpdated > 0) {
+                this.gudang.loadStokFromDatabase(); // Refresh the list from the database
+                logDataProcessingChange(currentUser.getNama(), "Updated stock with ID: " + idStok);
+                System.out.println("Stok updated successfully!");
+                return true;
+            } else {
+                System.out.println("Stok tidak ditemukan!");
+                return false;
+            }
+        } catch (SQLException e) {
+            System.out.println("Error updating stok in database: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean deleteStok(int idStok) {
+        try (Connection conn = FaunaFlowGG.getConnection()) {
+            String sql = "DELETE FROM Stok WHERE idStok = ?";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setInt(1, idStok);
+            int rowsDeleted = stmt.executeUpdate();
+            if (rowsDeleted > 0) {
+                gudang.loadStokFromDatabase();
+                logDataProcessingChange(currentUser.getNama(), "Deleted stock with ID: " + idStok);
+                return true;
+            } else {
+                return false;
+            }
+        } catch (SQLException e) {
+            System.out.println("Error deleting stok from database: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
     }
 
     public void loadStokFromDatabase() {
@@ -279,6 +402,7 @@ public class Manager {
             stmt.setInt(5, idEmployee);
             stmt.executeUpdate();
             loadEmployeesFromDatabase(); // Refresh the list from the database
+            logDataProcessingChange(currentUser.getNama(), "Edited employee with ID: " + idEmployee);
             System.out.println("Employee edited successfully!");
         } catch (SQLException e) {
             System.out.println("Error editing employee in database: " + e.getMessage());
@@ -332,23 +456,226 @@ public class Manager {
         return null;
     }
 
-    public void updateStok(int idStok, String kategori, String nama, int jumlah, String satuan, String gudang) {
+    public void createAccount(String username, String password, String role, Employee employee) {
         try (Connection conn = FaunaFlowGG.getConnection()) {
-            String sql = "UPDATE Stok SET kategoriStok = ?, namaStok = ?, jumlahStok = ?, Satuan = ?, idGudang = " +
-                         "(SELECT idGudang FROM Gudang WHERE namaGudang = ?) WHERE idStok = ?";
-            PreparedStatement stmt = conn.prepareStatement(sql);
-            stmt.setString(1, kategori);
-            stmt.setString(2, nama);
-            stmt.setInt(3, jumlah);
-            stmt.setString(4, satuan);
-            stmt.setString(5, gudang);
-            stmt.setInt(6, idStok);
-            stmt.executeUpdate();
-            this.gudang.loadStokFromDatabase(); // Refresh the list from the database
-            System.out.println("Stok updated successfully!");
+            if (role.equals("user") && employee != null) {
+                // Insert employee first
+                String employeeSql = "INSERT INTO employee (nama, usia, alamat, notel) VALUES (?, ?, ?, ?)";
+                PreparedStatement employeeStmt = conn.prepareStatement(employeeSql, PreparedStatement.RETURN_GENERATED_KEYS);
+                employeeStmt.setString(1, employee.getNama());
+                employeeStmt.setInt(2, employee.getUsia());
+                employeeStmt.setString(3, employee.getAlamat());
+                employeeStmt.setString(4, employee.getNoTelp());
+                employeeStmt.executeUpdate();
+
+                // Get the generated employee ID
+                ResultSet generatedKeys = employeeStmt.getGeneratedKeys();
+                if (generatedKeys.next()) {
+                    int employeeId = generatedKeys.getInt(1);
+
+                    // Insert account with the employee ID
+                    String accountSql = "INSERT INTO account (username, password, role, employee_id) VALUES (?, ?, ?, ?)";
+                    PreparedStatement accountStmt = conn.prepareStatement(accountSql);
+                    accountStmt.setString(1, username);
+                    accountStmt.setString(2, password);
+                    accountStmt.setString(3, role);
+                    accountStmt.setInt(4, employeeId);
+                    accountStmt.executeUpdate();
+
+                    logDataProcessingChange(currentUser.getNama(), "Created account for username: " + username);
+                    System.out.println("Account and employee created successfully!");
+                }
+            } else {
+                // Insert account without employee ID for admin
+                String accountSql = "INSERT INTO account (username, password, role, employee_id) VALUES (?, ?, ?, NULL)";
+                PreparedStatement accountStmt = conn.prepareStatement(accountSql);
+                accountStmt.setString(1, username);
+                accountStmt.setString(2, password);
+                accountStmt.setString(3, role);
+                accountStmt.executeUpdate();
+
+                logDataProcessingChange(currentUser.getNama(), "Created admin account for username: " + username);
+                System.out.println("Admin account created successfully!");
+            }
         } catch (SQLException e) {
-            System.out.println("Error updating stok in database: " + e.getMessage());
+            System.out.println("Error creating account and employee: " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    public void logDataProcessingChange(String username, String changeDescription) {
+        try (Connection conn = FaunaFlowGG.getConnection()) {
+            String sql = "INSERT INTO data_processing_log (username, change_description) VALUES (?, ?)";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setString(1, username);
+            stmt.setString(2, changeDescription);
+            stmt.executeUpdate();
+            System.out.println("Data processing change logged successfully!");
+        } catch (SQLException e) {
+            System.out.println("Error logging data processing change: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    public Object[][] getKandangContents() {
+        ArrayList<Object[]> kandangContentsList = new ArrayList<>();
+        try (Connection conn = FaunaFlowGG.getConnection()) {
+            String sql = "SELECT k.tipe, k.ukuran, h.nama, h.jumlah " +
+                         "FROM kandang k " +
+                         "LEFT JOIN hewan h ON k.id = h.idKandang"; // Join kandang and hewan tables
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                Object[] kandangContent = new Object[4];
+                kandangContent[0] = rs.getString("tipe");
+                kandangContent[1] = rs.getDouble("ukuran");
+                kandangContent[2] = rs.getString("nama");
+                kandangContent[3] = rs.getInt("jumlah");
+                kandangContentsList.add(kandangContent);
+            }
+        } catch (SQLException e) {
+            System.out.println("Error getting kandang contents from database: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return kandangContentsList.toArray(new Object[0][0]);
+    }
+
+    public Object[][] getLogsData() {
+        ArrayList<Object[]> logsList = new ArrayList<>();
+        try (Connection conn = FaunaFlowGG.getConnection()) {
+            String sql = "SELECT * FROM data_processing_log"; // Table name: data_processing_log
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                Object[] log = new Object[4];
+                log[0] = rs.getInt("id");
+                log[1] = rs.getString("username");
+                log[2] = rs.getString("change_description");
+                log[3] = rs.getTimestamp("change_time");
+                logsList.add(log);
+            }
+        } catch (SQLException e) {
+            System.out.println("Error getting logs data from database: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return logsList.toArray(new Object[0][0]);
+    }
+
+    public void addKandang(String ukuran, String tipe, String spesialitas) {
+        if (tipe.length() > 150 || spesialitas.length() > 150) {
+            System.out.println("Tipe and Spesialitas must be less than 150 characters.");
+            return;
+        }
+        try (Connection conn = FaunaFlowGG.getConnection()) {
+            String sql = "INSERT INTO kandang (ukuran, tipe, spesialitas) VALUES (?, ?, ?)";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setString(1, ukuran);
+            stmt.setString(2, tipe);
+            stmt.setString(3, spesialitas);
+            stmt.executeUpdate();
+            logDataProcessingChange(currentUser.getNama(), "Added kandang with ukuran: " + ukuran + ", tipe: " + tipe + ", spesialitas: " + spesialitas);
+        } catch (SQLException e) {
+            System.out.println("Error adding kandang to database: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    public void deleteKandang(int idKandang) {
+        try (Connection conn = FaunaFlowGG.getConnection()) {
+            String updateHewanSql = "UPDATE hewan SET idKandang = NULL WHERE idKandang = ?";
+            PreparedStatement updateHewanStmt = conn.prepareStatement(updateHewanSql);
+            updateHewanStmt.setInt(1, idKandang);
+            updateHewanStmt.executeUpdate();
+
+            String sql = "DELETE FROM kandang WHERE id = ?";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setInt(1, idKandang);
+            stmt.executeUpdate();
+            logDataProcessingChange(currentUser.getNama(), "Deleted kandang with ID: " + idKandang);
+        } catch (SQLException e) {
+            System.out.println("Error deleting kandang from database: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    public void editKandang(int idKandang, String ukuran, String tipe, String spesialitas) {
+        try (Connection conn = FaunaFlowGG.getConnection()) {
+            String sql = "UPDATE kandang SET ukuran = ?, tipe = ?, spesialitas = ? WHERE id = ?";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setString(1, ukuran);
+            stmt.setString(2, tipe);
+            stmt.setString(3, spesialitas);
+            stmt.setInt(4, idKandang);
+            stmt.executeUpdate();
+            logDataProcessingChange(currentUser.getNama(), "Edited kandang with ID: " + idKandang);
+        } catch (SQLException e) {
+            System.out.println("Error editing kandang in database: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    public void addHewan(String nama, int umur, int jumlah, double berat) {
+        try (Connection conn = FaunaFlowGG.getConnection()) {
+            String sql = "INSERT INTO hewan (nama, umur, jumlah, berat) VALUES (?, ?, ?, ?)";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setString(1, nama);
+            stmt.setInt(2, umur);
+            stmt.setInt(3, jumlah);
+            stmt.setDouble(4, berat);
+            stmt.executeUpdate();
+            logDataProcessingChange(currentUser.getNama(), "Added hewan: " + nama);
+        } catch (SQLException e) {
+            System.out.println("Error adding hewan to database: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    public void deleteHewan(int idHewan) {
+        try (Connection conn = FaunaFlowGG.getConnection()) {
+            String sql = "DELETE FROM hewan WHERE idHewan = ?";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setInt(1, idHewan);
+            stmt.executeUpdate();
+            logDataProcessingChange(currentUser.getNama(), "Deleted hewan with ID: " + idHewan);
+        } catch (SQLException e) {
+            System.out.println("Error deleting hewan from database: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    public void editHewan(int idHewan, int umur, int jumlah, double berat) {
+        try (Connection conn = FaunaFlowGG.getConnection()) {
+            String sql = "UPDATE hewan SET umur = ?, jumlah = ?, berat = ? WHERE idHewan = ?";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setInt(1, umur);
+            stmt.setInt(2, jumlah);
+            stmt.setDouble(3, berat);
+            stmt.setInt(4, idHewan);
+            stmt.executeUpdate();
+            logDataProcessingChange(currentUser.getNama(), "Edited hewan with ID: " + idHewan);
+        } catch (SQLException e) {
+            System.out.println("Error editing hewan in database: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    public void deleteAllLogs() {
+        try (Connection conn = FaunaFlowGG.getConnection()) {
+            String sql = "DELETE FROM data_processing_log";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.executeUpdate();
+            logDataProcessingChange(currentUser.getNama(), "Deleted all logs");
+            System.out.println("All logs deleted successfully!");
+        } catch (SQLException e) {
+            System.out.println("Error deleting all logs: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    public void cekStok(ArrayList<Object[]> stokDataList) {
+        gudang.loadStokFromDatabase();
+        gudang.cekStok(stokDataList);
     }
 }

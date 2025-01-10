@@ -15,6 +15,11 @@ public class Employee {
     protected String alamat;
     protected String noTelp;
 
+    public Employee(int idEmployee, String nama) {
+        this.idEmployee = idEmployee;
+        this.nama = nama;
+    }
+
     public Employee(int idEmployee, String nama, int usia, String alamat, String noTelp) {
         this.idEmployee = idEmployee;
         this.nama = nama;

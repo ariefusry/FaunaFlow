@@ -8,8 +8,10 @@ import java.util.ArrayList;
 
 public class Gudang {
     private ArrayList<Stok> stokList;
+    private Employee currentUser;
 
-    public Gudang() {
+    public Gudang(Employee currentUser) {
+        this.currentUser = currentUser;
         stokList = new ArrayList<>();
         loadStokFromDatabase();
     }
@@ -39,6 +41,10 @@ public class Gudang {
     }
 
     public void tambahStok(String kategoriStok, String namaStok, int jumlah, String satuan, int idGudang) {
+        if (idGudang != 1 && idGudang != 2) {
+            System.out.println("Error: ID Gudang must be 1 or 2.");
+            return;
+        }
         try (Connection conn = FaunaFlowGG.getConnection()) {
             String sql = "INSERT INTO Stok (kategoriStok, namaStok, jumlahStok, Satuan, idGudang) VALUES (?, ?, ?, ?, ?)";
             PreparedStatement stmt = conn.prepareStatement(sql);
@@ -48,8 +54,8 @@ public class Gudang {
             stmt.setString(4, satuan);
             stmt.setInt(5, idGudang);
             stmt.executeUpdate();
-            loadStokFromDatabase(); // Refresh the list from the database
-            System.out.println("Stok berhasil ditambahkan!");
+            loadStokFromDatabase();
+            logDataProcessingChange(currentUser.getNama(), "Added stock: " + namaStok + " in category: " + kategoriStok);
         } catch (SQLException e) {
             System.out.println("Error adding stok to database: " + e.getMessage());
             e.printStackTrace();
@@ -64,11 +70,10 @@ public class Gudang {
             stmt.setInt(2, idStok);
             int rowsUpdated = stmt.executeUpdate();
             if (rowsUpdated > 0) {
-                loadStokFromDatabase(); // Refresh the list from the database
-                System.out.println("Stok berhasil diperbarui!");
+                loadStokFromDatabase();
+                logDataProcessingChange(currentUser.getNama(), "Updated stock with ID: " + idStok);
                 return true;
             } else {
-                System.out.println("Stok tidak ditemukan!");
                 return false;
             }
         } catch (SQLException e) {
@@ -87,11 +92,10 @@ public class Gudang {
             stmt.setString(3, namaStok);
             int rowsUpdated = stmt.executeUpdate();
             if (rowsUpdated > 0) {
-                loadStokFromDatabase(); // Refresh the list from the database
-                System.out.println("Stok berhasil diperbarui!");
+                loadStokFromDatabase();
+                logDataProcessingChange(currentUser.getNama(), "Updated stock: " + namaStok + " in category: " + kategoriStok);
                 return true;
             } else {
-                System.out.println("Stok tidak ditemukan!");
                 return false;
             }
         } catch (SQLException e) {
@@ -108,10 +112,8 @@ public class Gudang {
             stmt.setInt(1, idStok);
             int rowsDeleted = stmt.executeUpdate();
             if (rowsDeleted > 0) {
-                loadStokFromDatabase(); // Refresh the list from the database
-                System.out.println("Stok berhasil dihapus!");
-            } else {
-                System.out.println("Stok tidak ditemukan!");
+                loadStokFromDatabase();
+                logDataProcessingChange(currentUser.getNama(), "Deleted stock with ID: " + idStok);
             }
         } catch (SQLException e) {
             System.out.println("Error deleting stok from database: " + e.getMessage());
@@ -127,13 +129,25 @@ public class Gudang {
             stmt.setString(2, namaStok);
             int rowsDeleted = stmt.executeUpdate();
             if (rowsDeleted > 0) {
-                loadStokFromDatabase(); // Refresh the list from the database
-                System.out.println("Stok berhasil dihapus!");
-            } else {
-                System.out.println("Stok tidak ditemukan!");
+                loadStokFromDatabase();
+                logDataProcessingChange(currentUser.getNama(), "Deleted stock: " + namaStok + " in category: " + kategoriStok);
             }
         } catch (SQLException e) {
             System.out.println("Error deleting stok from database: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private void logDataProcessingChange(String username, String changeDescription) {
+        try (Connection conn = FaunaFlowGG.getConnection()) {
+            String sql = "INSERT INTO data_processing_log (username, change_description) VALUES (?, ?)";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setString(1, username);
+            stmt.setString(2, changeDescription);
+            stmt.executeUpdate();
+            System.out.println("Data processing change logged successfully!");
+        } catch (SQLException e) {
+            System.out.println("Error logging data processing change: " + e.getMessage());
             e.printStackTrace();
         }
     }

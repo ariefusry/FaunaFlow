@@ -44,28 +44,6 @@ public class EmployeeManagementSystem {
         return null;
     }
 
-    public Employee getEmployeeByUsername(String username) {
-        try (Connection conn = FaunaFlowGG.getConnection()) {
-            String sql = "SELECT e.id, e.nama, e.usia, e.alamat, e.notel FROM employee e JOIN account a ON e.id = a.id WHERE a.username = ?"; // Join employee and account tables
-            PreparedStatement stmt = conn.prepareStatement(sql);
-            stmt.setString(1, username);
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                return new Employee(
-                    rs.getInt("id"),
-                    rs.getString("nama"),
-                    rs.getInt("usia"),
-                    rs.getString("alamat"),
-                    rs.getString("notel")
-                );
-            }
-        } catch (SQLException e) {
-            System.out.println("Error getting employee by username from database: " + e.getMessage());
-            e.printStackTrace();
-        }
-        return null;
-    }
-
     public boolean login(String username, String password) {
         try (Connection conn = FaunaFlowGG.getConnection()) {
             String sql = "SELECT * FROM account WHERE username = ? AND password = ?"; // Table name: account
@@ -74,13 +52,15 @@ public class EmployeeManagementSystem {
             stmt.setString(2, password);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
-                currentUser = new Employee(
-                    rs.getInt("id"),
-                    rs.getString("nama"),
-                    rs.getInt("usia"),
-                    rs.getString("alamat"),
-                    rs.getString("notel")
-                );
+                String accountUsername = rs.getString("username");
+                Integer employeeId = rs.getObject("employee_id", Integer.class);
+                if (employeeId != null) {
+                    currentUser = new Employee(employeeId, accountUsername); // Set currentUser with username and employeeId
+                } else {
+                    currentUser = new Employee(0, accountUsername); // Set currentUser with username only for admin
+                }
+                System.out.println("Login successful. Current user: " + currentUser.getNama());
+                logDataProcessingChange(currentUser.getNama(), "User logged in");
                 return true;
             }
         } catch (SQLException e) {
@@ -91,7 +71,69 @@ public class EmployeeManagementSystem {
     }
 
     public void logout() {
-        currentUser = null;
+        if (currentUser != null) {
+            logDataProcessingChange(currentUser.getNama(), "User logged out");
+            currentUser = null;
+        }
+    }
+
+    public void removeEmployee(int idEmployee) {
+        try (Connection conn = FaunaFlowGG.getConnection()) {
+            // Start a transaction
+            conn.setAutoCommit(false);
+
+            // Remove the employee
+            String sqlEmployee = "DELETE FROM employee WHERE id = ?";
+            PreparedStatement stmtEmployee = conn.prepareStatement(sqlEmployee);
+            stmtEmployee.setInt(1, idEmployee);
+            int rowsAffectedEmployee = stmtEmployee.executeUpdate();
+
+            // Remove the associated account
+            String sqlAccount = "DELETE FROM account WHERE employee_id = ?";
+            PreparedStatement stmtAccount = conn.prepareStatement(sqlAccount);
+            stmtAccount.setInt(1, idEmployee);
+            int rowsAffectedAccount = stmtAccount.executeUpdate();
+
+            if (rowsAffectedEmployee > 0) {
+                conn.commit(); // Commit the transaction
+                logDataProcessingChange(currentUser.getNama(), "Removed employee with ID: " + idEmployee + " and associated account");
+                System.out.println("Employee and associated account removed successfully!");
+            } else {
+                conn.rollback(); // Rollback the transaction
+                System.out.println("Employee with ID: " + idEmployee + " not found.");
+            }
+        } catch (SQLException e) {
+            System.out.println("Error removing employee and associated account from database: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private void logDataProcessingChange(String username, String changeDescription) {
+        if (currentUser == null) {
+            System.out.println("currentUser is null, cannot log data processing change.");
+            return;
+        }
+        try (Connection conn = FaunaFlowGG.getConnection()) {
+            // Check if the username exists in the account table
+            String checkUserSql = "SELECT username FROM account WHERE username = ?";
+            PreparedStatement checkUserStmt = conn.prepareStatement(checkUserSql);
+            checkUserStmt.setString(1, currentUser.getNama());
+            ResultSet rs = checkUserStmt.executeQuery();
+            if (!rs.next()) {
+                System.out.println("Error: Username " + currentUser.getNama() + " does not exist in the account table.");
+                return;
+            }
+
+            String sql = "INSERT INTO data_processing_log (username, change_description) VALUES (?, ?)";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setString(1, currentUser.getNama());
+            stmt.setString(2, changeDescription);
+            stmt.executeUpdate();
+            System.out.println("Data processing change logged successfully!");
+        } catch (SQLException e) {
+            System.out.println("Error logging data processing change: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     public boolean isAdmin() {
@@ -99,9 +141,9 @@ public class EmployeeManagementSystem {
             return false;
         }
         try (Connection conn = FaunaFlowGG.getConnection()) {
-            String sql = "SELECT role FROM account WHERE id = ?";
+            String sql = "SELECT role FROM account WHERE username = ?";
             PreparedStatement stmt = conn.prepareStatement(sql);
-            stmt.setInt(1, currentUser.getIdEmployee());
+            stmt.setString(1, currentUser.getNama());
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
                 return "admin".equalsIgnoreCase(rs.getString("role"));
@@ -119,6 +161,10 @@ public class EmployeeManagementSystem {
 
     public boolean isLoggedIn() {
         return currentUser != null;
+    }
+
+    public Employee getCurrentUser() {
+        return currentUser;
     }
 }
 
