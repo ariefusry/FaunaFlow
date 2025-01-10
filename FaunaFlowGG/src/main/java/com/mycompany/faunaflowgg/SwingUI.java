@@ -716,13 +716,17 @@ public class SwingUI {
                     JOptionPane.showMessageDialog(panel, "Employee ID tidak boleh kosong.", "Error", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
-                int id = Integer.parseInt(idStr);
-                boolean success = manager.removeEmployee(id); // Use Manager to remove employee
-                if (success) {
-                    JOptionPane.showMessageDialog(panel, "Employee and associated account removed successfully!");
-                    showLoggedInHomePage();
-                } else {
-                    JOptionPane.showMessageDialog(panel, "Employee with ID: " + id + " not found.", "Error", JOptionPane.ERROR_MESSAGE);
+                try {
+                    int id = Integer.parseInt(idStr);
+                    boolean success = manager.removeEmployee(id); // Use Manager to remove employee
+                    if (success) {
+                        JOptionPane.showMessageDialog(panel, "Employee and associated account removed successfully!");
+                        showLoggedInHomePage();
+                    } else {
+                        JOptionPane.showMessageDialog(panel, "Employee with ID: " + id + " not found.", "Error", JOptionPane.ERROR_MESSAGE);
+                    }
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(panel, "Invalid input for Employee ID. Please enter a valid number.", "Error", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
@@ -794,35 +798,33 @@ public class SwingUI {
         
         addButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                String ukuran = ukuranText.getText().trim();
+                String ukuranStr = ukuranText.getText().trim();
                 String tipe = tipeText.getText().trim();
                 String spesialitas = spesialitasText.getText().trim();
 
-                if (ukuran.isEmpty() || tipe.isEmpty() || spesialitas.isEmpty()) {
-                    JOptionPane.showMessageDialog(panel, "All fields must be filled out.");
+                if (ukuranStr.isEmpty() || tipe.isEmpty() || spesialitas.isEmpty()) {
+                    JOptionPane.showMessageDialog(frame, "All fields must be filled out.", "Error", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
 
                 if (tipe.length() > 150 || spesialitas.length() > 150) {
-                    JOptionPane.showMessageDialog(panel, "Tipe and Spesialitas must be less than 150 characters.", "Error", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(frame, "Tipe and Spesialitas must be less than 150 characters.", "Error", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
 
-                if (ems.getCurrentUser() == null) {
-                    JOptionPane.showMessageDialog(panel, "Current user is not set. Please log in again.");
-                    return;
+                try {
+                    double ukuran = Double.parseDouble(ukuranStr);
+                    kandang.addKandang(String.valueOf(ukuran), tipe, spesialitas);
+                    JOptionPane.showMessageDialog(frame, "Kandang added successfully!");
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(frame, "Invalid input for Ukuran. Please enter a valid number.", "Error", JOptionPane.ERROR_MESSAGE);
                 }
-
-                Kandang kandang = new Kandang(Double.parseDouble(ukuran), tipe, spesialitas, ems.getCurrentUser());
-                kandang.addKandang(ukuran, tipe, spesialitas); // Use Kandang instance to add kandang
-                JOptionPane.showMessageDialog(panel, "Kandang added successfully!");
-                showLoggedInHomePage();
             }
         });
 
         backButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                showLoggedInHomePage();
+                showHomePage();
             }
         });
 
@@ -1335,11 +1337,13 @@ public class SwingUI {
                     JOptionPane.showMessageDialog(panel, "Kandang ID tidak boleh kosong.", "Error", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
-                int id = Integer.parseInt(idStr);
                 try {
+                    int id = Integer.parseInt(idStr);
                     kandang.deleteKandang(id); // Use Kandang instance to delete kandang
                     JOptionPane.showMessageDialog(panel, "Kandang deleted successfully!");
                     showLoggedInHomePage();
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(panel, "Invalid input for Kandang ID. Please enter a valid number.", "Error", JOptionPane.ERROR_MESSAGE);
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(panel, "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
                 }
@@ -1789,16 +1793,20 @@ public class SwingUI {
                     return;
                 }
 
-                int id = Integer.parseInt(idStr);
-                Stok stokData = manager.getStokById(id); // Use Manager instance to get stock data by ID
+                try {
+                    int id = Integer.parseInt(idStr);
+                    Stok stokData = manager.getStokById(id); // Use Manager instance to get stock data by ID
 
-                if (stokData == null) {
-                    JOptionPane.showMessageDialog(panel, "ID Stok tidak ditemukan.", "Error", JOptionPane.ERROR_MESSAGE);
-                    return;
+                    if (stokData == null) {
+                        JOptionPane.showMessageDialog(panel, "ID Stok tidak ditemukan.", "Error", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+
+                    // Navigate to new page for editing
+                    showEditStokDetailsPage(id, stokData);
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(panel, "Invalid input for ID Stok. Please enter a valid number.", "Error", JOptionPane.ERROR_MESSAGE);
                 }
-
-                // Navigate to new page for editing
-                showEditStokDetailsPage(id, stokData);
             }
         });
 
@@ -2003,8 +2011,8 @@ public class SwingUI {
                     JOptionPane.showMessageDialog(panel, "ID Stok tidak boleh kosong.", "Error", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
-                int id = Integer.parseInt(idStr);
                 try {
+                    int id = Integer.parseInt(idStr);
                     boolean success = manager.deleteStok(id); // Use Manager to delete stock
                     if (success) {
                         JOptionPane.showMessageDialog(panel, "Stok berhasil dihapus!");
@@ -2012,6 +2020,8 @@ public class SwingUI {
                     } else {
                         JOptionPane.showMessageDialog(panel, "Stok dengan ID: " + id + " tidak ditemukan.", "Error", JOptionPane.ERROR_MESSAGE);
                     }
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(panel, "Invalid input for ID Stok. Please enter a valid number.", "Error", JOptionPane.ERROR_MESSAGE);
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(panel, "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
                 }
@@ -2169,16 +2179,20 @@ public class SwingUI {
                     return;
                 }
 
-                int id = Integer.parseInt(idStr);
-                Object[] kandangData = kandang.getKandangById(id); // Use Kandang instance to get kandang data by ID
+                try {
+                    int id = Integer.parseInt(idStr);
+                    Object[] kandangData = kandang.getKandangById(id); // Use Kandang instance to get kandang data by ID
 
-                if (kandangData == null) {
-                    JOptionPane.showMessageDialog(panel, "Kandang ID tidak ditemukan.", "Error", JOptionPane.ERROR_MESSAGE);
-                    return;
+                    if (kandangData == null) {
+                        JOptionPane.showMessageDialog(panel, "Kandang ID tidak ditemukan.", "Error", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+
+                    // Navigate to new page for editing
+                    showEditKandangDetailsPage(id, kandangData);
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(panel, "Invalid input for Kandang ID. Please enter a valid number.", "Error", JOptionPane.ERROR_MESSAGE);
                 }
-
-                // Navigate to new page for editing
-                showEditKandangDetailsPage(id, kandangData);
             }
         });
 
@@ -2356,16 +2370,20 @@ public class SwingUI {
                     return;
                 }
 
-                int id = Integer.parseInt(idStr);
-                Object[] hewanData = hewan.getHewanById(id); // Use Hewan instance to get hewan data by ID
+                try {
+                    int id = Integer.parseInt(idStr);
+                    Object[] hewanData = hewan.getHewanById(id); // Use Hewan instance to get hewan data by ID
 
-                if (hewanData == null) {
-                    JOptionPane.showMessageDialog(panel, "Hewan ID tidak ditemukan.", "Error", JOptionPane.ERROR_MESSAGE);
-                    return;
+                    if (hewanData == null) {
+                        JOptionPane.showMessageDialog(panel, "Hewan ID tidak ditemukan.", "Error", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+
+                    // Navigate to new page for editing
+                    showEditHewanDetailsPage(id, hewanData);
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(panel, "Invalid input for Hewan ID. Please enter a valid number.", "Error", JOptionPane.ERROR_MESSAGE);
                 }
-
-                // Navigate to new page for editing
-                showEditHewanDetailsPage(id, hewanData);
             }
         });
 
@@ -2545,15 +2563,19 @@ public class SwingUI {
                     return;
                 }
 
-                int id = Integer.parseInt(idStr);
-                Employee employeeData = manager.getEmployeeById(id); // Use Manager instance to get employee data by ID
+                try {
+                    int id = Integer.parseInt(idStr);
+                    Employee employeeData = manager.getEmployeeById(id); // Use Manager instance to get employee data by ID
 
-                if (employeeData == null) {
-                    JOptionPane.showMessageDialog(panel, "Employee ID tidak ditemukan.", "Error", JOptionPane.ERROR_MESSAGE);
-                    return;
+                    if (employeeData == null) {
+                        JOptionPane.showMessageDialog(panel, "Employee ID tidak ditemukan.", "Error", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+
+                    showEditEmployeeDetailsPage(id, employeeData); // Navigate to the edit details page
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(panel, "Invalid input for Employee ID. Please enter a valid number.", "Error", JOptionPane.ERROR_MESSAGE);
                 }
-
-                showEditEmployeeDetailsPage(id, employeeData); // Navigate to the edit details page
             }
         });
 
